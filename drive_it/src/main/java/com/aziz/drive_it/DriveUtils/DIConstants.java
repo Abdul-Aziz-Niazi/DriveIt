@@ -1,4 +1,4 @@
-package com.aziz.driveit.DriveUtils;
+package com.aziz.drive_it.DriveUtils;
 
 class DIConstants {
     public static final String BASE_URL = "https://www.googleapis.com/";

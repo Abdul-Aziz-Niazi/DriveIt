@@ -1,4 +1,4 @@
-package com.aziz.driveit.DriveUtils;
+package com.aziz.drive_it.DriveUtils;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -12,8 +12,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import com.aziz.driveit.DriveUtils.utils.DIUtils;
-import com.aziz.driveit.R;
+import com.aziz.drive_it.DriveUtils.utils.DIUtils;
+import com.aziz.drive_it.R;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.ResponseBody;
 import org.json.JSONArray;
@@ -34,6 +34,7 @@ public class DIRestoreService extends Service {
     private int count;
     private int total;
     private NotificationManager notificationManager;
+    private Context context;
 
     @Nullable
     @Override
@@ -42,20 +43,40 @@ public class DIRestoreService extends Service {
     }
 
 
-    private void createNotification(Context context) {
-        Log.d(TAG, "createNotification: creating notification");
-        notificationCompat = new NotificationCompat
-                .Builder(context, "DATA_RESTORE")
-                .setContentTitle("Restore in Progress")
-                .setProgress(10, 0, true)
-                .setSound(null)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentText("initializing restore");
-        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            notificationManager.createNotificationChannel(new NotificationChannel("DATA_RESTORE", "DATA_RESTORE", NotificationManager.IMPORTANCE_LOW));
-        Notification notification = notificationCompat.build();
-        notificationManager.notify(NOTIFICATION_ID, notification);
+    private void createNotification(Context context, int type) {
+        Log.d(TAG, "createNotification: creating notification " + type);
+        if (type == 0) {
+            notificationCompat = new NotificationCompat
+                    .Builder(context, "DATA_RESTORE")
+                    .setContentTitle("Restore in Progress")
+                    .setProgress(10, 0, true)
+                    .setSound(null)
+                    .setSmallIcon(R.drawable.ic_gdrive)
+                    .setContentText("initializing restore");
+            notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                notificationManager.createNotificationChannel(new NotificationChannel("DATA_RESTORE", "DATA_RESTORE", NotificationManager.IMPORTANCE_LOW));
+            Notification notification = notificationCompat.build();
+            notificationManager.notify(NOTIFICATION_ID, notification);
+        } else {
+            notificationCompat = new NotificationCompat
+                    .Builder(context, "DATA_RESTORE")
+                    .setSound(null)
+                    .setSmallIcon(R.drawable.ic_gdrive);
+            if (count == 0) {
+                notificationCompat.setContentTitle("Backup not found");
+                notificationCompat.setContentText("Restore failed");
+            } else {
+                notificationCompat.setContentTitle("Restore Complete");
+                notificationCompat.setContentText(total + " files");
+            }
+            notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                notificationManager.createNotificationChannel(new NotificationChannel("DATA_RESTORE", "DATA_RESTORE", NotificationManager.IMPORTANCE_LOW));
+            Notification notification = notificationCompat.build();
+            notificationManager.notify(NOTIFICATION_ID, notification);
+        }
+
 //        startForeground(909,notification);
     }
 
@@ -66,7 +87,7 @@ public class DIRestoreService extends Service {
         notificationManager.notify(NOTIFICATION_ID, notificationCompat.build());
         if (count == total) {
             removeNotification();
-//            stopForeground(true);
+            createNotification(context, 1);
             stopSelf();
         }
     }
@@ -82,7 +103,8 @@ public class DIRestoreService extends Service {
     }
 
     public void startRestore(Context context, DICallBack<File> fileDICallBack) {
-        createNotification(context);
+        this.context = context;
+        createNotification(context, 0);
         restore(fileDICallBack);
     }
 
@@ -96,6 +118,10 @@ public class DIRestoreService extends Service {
                 total = fileArrayList.size();
                 count = 0;
                 Log.d(TAG, "progress: 0 out of " + total);
+                if (total == 0) {
+                    updateNotification(count);
+                    createNotification(context, 1);
+                }
                 for (final DIFile file : fileArrayList) {
                     restoreEach(file, new DICallBack<File>() {
                         @Override

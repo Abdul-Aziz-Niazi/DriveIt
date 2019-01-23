@@ -1,4 +1,4 @@
-package com.aziz.driveit.DriveUtils;
+package com.aziz.drive_it.DriveUtils;
 
 public class DIFile {
     private String kind;
