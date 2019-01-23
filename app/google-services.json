@@ -1,0 +1,53 @@
+{
+  "project_info": {
+    "project_number": "675685919040",
+    "firebase_url": "https://driveit-library.firebaseio.com",
+    "project_id": "driveit-library",
+    "storage_bucket": "driveit-library.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675685919040:android:620bf1df5527065c",
+        "android_client_info": {
+          "package_name": "com.aziz.driveit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "675685919040-1gs6ho8ifkfclk1jhskv218i0pddjd8p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDJXV0557j4DOS9SGI7Bhwnv55S0W8V4Y"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      },
+      "installed": {
+        "client_id": "675685919040-j7v655udkntojaiq4savpbuupjf2ki8k.apps.googleusercontent.com",
+        "project_id": "driveit-library",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "redirect_uris": [
+          "urn:ietf:wg:oauth:2.0:oob",
+          "http://localhost"
+        ]
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
