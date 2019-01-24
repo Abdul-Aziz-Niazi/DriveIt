@@ -3,17 +3,11 @@ package com.aziz.driveit
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
-import com.aziz.driveit.DriveUtils.DICallBack
-import com.aziz.driveit.DriveUtils.DriveIt
-import com.google.android.gms.auth.GoogleAuthUtil
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.drive.Drive
-import com.google.android.gms.drive.DriveClient
-import com.google.android.gms.drive.DriveResourceClient
-import com.google.android.gms.drive.DriveStatusCodes
+import com.aziz.drive_it.DriveUtils.DICallBack
+import com.aziz.drive_it.DriveUtils.DIFile
+import com.aziz.drive_it.DriveUtils.DriveIt
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
@@ -30,14 +24,32 @@ class MainActivity : AppCompatActivity() {
             DriveIt.getInstance().signOut()
         }
         backup.setOnClickListener {
-
-            DriveIt.getInstance().startBackup(this@MainActivity, object : DICallBack<File> {
-                override fun success(file: File?) {
-                    Log.d("MAIN","DONE ${file!!.name}")
+            val fileList = ArrayList<File>()
+            val uploads = File(Environment.getExternalStorageDirectory().absolutePath + "/Upload")
+            Log.d("MAIN", "FILE exists " + uploads.exists())
+            for (file: File in uploads.listFiles()) {
+                fileList.add(file)
+            }
+            DriveIt.getInstance().startBackup(this@MainActivity, fileList, object : DICallBack<DIFile> {
+                override fun success(file: DIFile?) {
+                    Log.d("MAIN", "Backup ${file!!.name}")
                 }
 
                 override fun failure(error: String?) {
-                    Log.d("MAIN","$error")
+                    Log.d("MAIN", "$error")
+                }
+            })
+        }
+        restore.setOnClickListener {
+
+            DriveIt.getInstance().startRestore(this@MainActivity, object : DICallBack<File> {
+                override fun success(file: File?) {
+                    Log.d("MAIN", "DONE ${file!!.name}")
+                    DriveIt.getInstance().writeFile(file,Environment.getExternalStorageDirectory().absolutePath+"/demo/"+file.name)
+                }
+
+                override fun failure(error: String?) {
+                    Log.d("MAIN", "$error")
                 }
             })
         }

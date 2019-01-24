@@ -29,6 +29,8 @@ import java.util.ArrayList;
 public class DIRestoreService extends Service {
     private static final String TAG = DIRestoreService.class.getSimpleName();
     private static final int NOTIFICATION_ID = 909;
+    private static final String DATA_RESTORE = "RESTORE";
+
     private static DIRestoreService INSTANCE;
     private NotificationCompat.Builder notificationCompat;
     private int count;
@@ -47,20 +49,21 @@ public class DIRestoreService extends Service {
         Log.d(TAG, "createNotification: creating notification " + type);
         if (type == 0) {
             notificationCompat = new NotificationCompat
-                    .Builder(context, "DATA_RESTORE")
+                    .Builder(context, DATA_RESTORE)
                     .setContentTitle("Restore in Progress")
                     .setProgress(10, 0, true)
                     .setSound(null)
                     .setSmallIcon(R.drawable.ic_gdrive)
                     .setContentText("initializing restore");
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                notificationManager.createNotificationChannel(new NotificationChannel("DATA_RESTORE", "DATA_RESTORE", NotificationManager.IMPORTANCE_LOW));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                notificationManager.createNotificationChannel(new NotificationChannel(DATA_RESTORE, DATA_RESTORE, NotificationManager.IMPORTANCE_LOW));
+            }
             Notification notification = notificationCompat.build();
             notificationManager.notify(NOTIFICATION_ID, notification);
         } else {
             notificationCompat = new NotificationCompat
-                    .Builder(context, "DATA_RESTORE")
+                    .Builder(context, DATA_RESTORE)
                     .setSound(null)
                     .setSmallIcon(R.drawable.ic_gdrive);
             if (count == 0) {
@@ -72,12 +75,11 @@ public class DIRestoreService extends Service {
             }
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                notificationManager.createNotificationChannel(new NotificationChannel("DATA_RESTORE", "DATA_RESTORE", NotificationManager.IMPORTANCE_LOW));
+                notificationManager.createNotificationChannel(new NotificationChannel(DATA_RESTORE, DATA_RESTORE, NotificationManager.IMPORTANCE_LOW));
             Notification notification = notificationCompat.build();
             notificationManager.notify(NOTIFICATION_ID, notification);
         }
 
-//        startForeground(909,notification);
     }
 
     private void updateNotification(int count) {

@@ -32,11 +32,8 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-    implementation "com.google.android.gms:play-services-drive:16.0.0"
-    implementation 'org.greenrobot:eventbus:3.1.1'
     implementation 'com.google.code.gson:gson:2.8.5'
-    implementation("com.google.android.gms:play-services-auth:16.0.0") {
-        exclude group: "com.android.support"
-    }
+    implementation 'org.greenrobot:eventbus:3.1.1'
+    implementation project(":drive_it")
 }
 apply plugin: 'com.google.gms.google-services'

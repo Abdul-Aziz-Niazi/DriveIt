@@ -28,18 +28,20 @@ public interface WebService {
     @POST
     Call<ResponseBody> post(@Url String endpoint, @HeaderMap Map<String, String> headerMap);
 
+    @POST
+    Call<DIFile> post(@Url String endpoint, @HeaderMap Map<String, String> headerMap, @Body DIFile body);
+
     @Multipart
     @POST
     Call<ResponseBody> post(@Url String endpoint,
                             @HeaderMap Map<String, String> headerMap,
                             @PartMap Map<String, RequestBody> bodyMap);
 
-    @Multipart
-    @POST
-    Call<ResponseBody> post(@Url String endpoint,
-                            @HeaderMap Map<String, String> headerMap,
-                            @PartMap Map<String, RequestBody> bodyMap,
-                            @Part MultipartBody.Part file);
+
+    @PATCH
+    Call<DIFile> patch(@Url String endpoint,
+                       @HeaderMap Map<String, String> headerMap,
+                       @Body RequestBody file);
 
     @Multipart
     @POST

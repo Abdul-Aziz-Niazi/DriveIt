@@ -1,10 +1,19 @@
 package com.aziz.drive_it.DriveUtils;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class DIFile {
     private String kind;
     private String id;
+    @SerializedName("name")
     private String name;
+    @SerializedName("mimeType")
     private String mimeType;
+    @SerializedName("parents")
+    private List<String> parents = new ArrayList<>();
 
     public String getKind() {
         return kind;
@@ -38,10 +47,18 @@ public class DIFile {
         this.mimeType = mimeType;
     }
 
+    public List<String> getParents() {
+        return parents;
+    }
+
+    public void setParents(List<String> parents) {
+        this.parents = parents;
+    }
+
     @Override
     public String toString() {
         return "\n\nid " + getId() + "\n"
                 + "name " + getName() + "\n"
-                + "mime " + getMimeType() ;
+                + "mime " + getMimeType();
     }
 }

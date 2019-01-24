@@ -14,11 +14,15 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.tasks.Task;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
 public class DriveIt {
@@ -50,9 +54,12 @@ public class DriveIt {
     }
 
     private GoogleSignInClient buildSignInClient(Context context) {
+        Scope SCOPE_DRIVE = new Scope("https://www.googleapis.com/auth/drive");
+        Scope SCOPE_METADATA = new Scope("https://www.googleapis.com/auth/drive.metadata");
+
         GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                .requestScopes(Drive.SCOPE_APPFOLDER, Drive.SCOPE_FILE)
+                .requestScopes(SCOPE_DRIVE, SCOPE_METADATA, Drive.SCOPE_APPFOLDER, Drive.SCOPE_FILE)
                 .requestIdToken(DIConstants.ClIENT_ID)
                 .build();
         return GoogleSignIn.getClient(context, options);
@@ -79,13 +86,22 @@ public class DriveIt {
         return fileArrayList;
     }
 
-    public void startBackup(Activity activity, DICallBack<File> listener) {
+    public void startBackup(Activity activity, ArrayList<File> files, DICallBack<DIFile> listener) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             activity.startForegroundService(new Intent(activity, DIRestoreService.class));
         } else {
             activity.startService(new Intent(activity, DIRestoreService.class));
         }
-        DIRestoreService.getInstance().startRestore(activity,listener);
+        DIBackupService.getInstance().startBackup(activity, files, listener);
+    }
+
+    public void startRestore(Activity activity, DICallBack<File> listener) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            activity.startForegroundService(new Intent(activity, DIRestoreService.class));
+        } else {
+            activity.startService(new Intent(activity, DIRestoreService.class));
+        }
+        DIRestoreService.getInstance().startRestore(activity, listener);
     }
 
     public class AccountTask extends AsyncTask<String, Void, Void> {
@@ -110,11 +126,23 @@ public class DriveIt {
             }
             return null;
         }
+    }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-//            DIFileDownloader.downloadFile();
+    public void writeFile(File sourceFile, String destFile) throws IOException {
+        writeFile(sourceFile, new File(destFile));
+    }
+
+    public void writeFile(File sourceFile, File destFile) throws IOException {
+        if (!destFile.getParentFile().exists())
+            destFile.getParentFile().mkdirs();
+
+        if (!destFile.exists()) {
+            destFile.createNewFile();
+        }
+
+        try (FileChannel source = new FileInputStream(sourceFile).getChannel(); FileChannel destination = new FileOutputStream(destFile).getChannel()) {
+            destination.transferFrom(source, 0, source.size());
+            sourceFile.delete();
         }
     }
 

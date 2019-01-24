@@ -10,6 +10,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -21,32 +22,7 @@ public class DINetworkHandler {
     private String AuthToken = "";
     private static DINetworkHandler INSTANCE;
     private final WebService webService;
-    HashMap<String, String> headers = new HashMap<>();
-    private Activity activity;
-    private DICallBack callBack;
-    private Context context;
-    private int count = 0;
-
-    public static DINetworkHandler getInstance() {
-        if (INSTANCE == null)
-            INSTANCE = new DINetworkHandler();
-
-        return INSTANCE;
-    }
-
-    public HashMap<String, String> getHeaders() {
-        headers.put("Authorization", getAuthToken());
-        headers.put("Accept", "application/json");
-
-//        headers.put("clientId", DIConstants.ClIENT_ID);
-//        headers.put("apiKey", DIConstants.API_KEY);
-        Log.d(TAG, "getHeaders: " + headers);
-        return headers;
-    }
-
-    public WebService getWebService() {
-        return webService;
-    }
+    private HashMap<String, String> headers = new HashMap<>();
 
     private DINetworkHandler() {
         OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
@@ -55,11 +31,34 @@ public class DINetworkHandler {
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .build();
         Retrofit retrofit;
-        retrofit = new Retrofit.Builder().client(okHttpClient).baseUrl(DIConstants.BASE_URL).build();
+        retrofit = new Retrofit.Builder()
+                .client(okHttpClient)
+                .baseUrl(DIConstants.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
         webService = retrofit.create(WebService.class);
     }
 
-    String getAuthToken() {
+    public static DINetworkHandler getInstance() {
+        if (INSTANCE == null)
+            INSTANCE = new DINetworkHandler();
+
+        return INSTANCE;
+    }
+
+    HashMap<String, String> getHeaders() {
+        headers.put("Authorization", getAuthToken());
+        headers.put("Accept", "application/json");
+        Log.d(TAG, "getHeaders: " + headers);
+        return headers;
+    }
+
+    WebService getWebService() {
+        return webService;
+    }
+
+
+    private String getAuthToken() {
         return AuthToken;
     }
 
@@ -67,9 +66,6 @@ public class DINetworkHandler {
         AuthToken = authToken;
     }
 
-
-    public void startBackup(ArrayList<File> fileArrayList, final DICallBack diCallBack) {
-    }
 
 
 
