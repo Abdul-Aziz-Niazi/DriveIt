@@ -1,5 +1,6 @@
 package com.aziz.drive_it.DriveUtils;
 
+import com.aziz.drive_it.DriveUtils.model.DIFile;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -9,7 +10,7 @@ import retrofit2.http.*;
 import java.util.ArrayList;
 import java.util.Map;
 
-public interface WebService {
+interface WebService {
 
     @GET
     Call<ResponseBody> get(@Url String endpoint);

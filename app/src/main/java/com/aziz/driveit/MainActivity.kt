@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import com.aziz.drive_it.DriveUtils.DICallBack
-import com.aziz.drive_it.DriveUtils.DIFile
+import com.aziz.drive_it.DriveUtils.model.DIFile
 import com.aziz.drive_it.DriveUtils.DriveIt
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File

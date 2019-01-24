@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import com.aziz.drive_it.DriveUtils.model.DIFile;
 import com.aziz.drive_it.DriveUtils.utils.DIUtils;
 import com.aziz.drive_it.R;
 import com.google.gson.reflect.TypeToken;
@@ -26,7 +27,7 @@ import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-public class DIRestoreService extends Service {
+class DIRestoreService extends Service {
     private static final String TAG = DIRestoreService.class.getSimpleName();
     private static final int NOTIFICATION_ID = 909;
     private static final String DATA_RESTORE = "RESTORE";
@@ -157,7 +158,7 @@ public class DIRestoreService extends Service {
 
 
     private void restoreEach(final DIFile file, final DICallBack<File> completionListener) {
-        DIFileDownloader.downloadFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/driveIt/", file,
+        DIFileDownloader.downloadFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/.driveIt/", file,
                 new DICallBack<File>() {
                     @Override
                     public void success(File file) {

@@ -1,4 +1,4 @@
-package com.aziz.drive_it.DriveUtils;
+package com.aziz.drive_it.DriveUtils.model;
 
 import com.google.gson.annotations.SerializedName;
 

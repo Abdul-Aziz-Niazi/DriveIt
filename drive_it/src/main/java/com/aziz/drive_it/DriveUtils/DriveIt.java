@@ -1,12 +1,15 @@
 package com.aziz.drive_it.DriveUtils;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.annotation.RequiresPermission;
 import android.util.Log;
+import com.aziz.drive_it.DriveUtils.model.DIFile;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -17,6 +20,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.tasks.Task;
+import pub.devrel.easypermissions.EasyPermissions;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +35,7 @@ public class DriveIt {
     private GoogleSignInClient signInClient;
     private ArrayList<File> fileArrayList = new ArrayList<>();
     private Context context;
+    private String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     private DriveIt() {
     }
@@ -71,6 +76,9 @@ public class DriveIt {
             Log.d(TAG, "onActivityResult: " + resultCode + " data " + data);
             return;
         }
+        if (resultCode == Activity.RESULT_CANCELED || data == null)
+            return;
+
         Task<GoogleSignInAccount> getAccountTask = GoogleSignIn.getSignedInAccountFromIntent(data);
         if (getAccountTask.getResult() == null)
             return;
@@ -78,15 +86,16 @@ public class DriveIt {
         new AccountTask().execute(getAccountTask.getResult().getEmail());
     }
 
-    public void addFileOrDirectories(File file) {
-        fileArrayList.add(file);
-    }
-
-    public ArrayList<File> getDirectories() {
-        return fileArrayList;
-    }
-
+    @RequiresPermission(allOf = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE})
     public void startBackup(Activity activity, ArrayList<File> files, DICallBack<DIFile> listener) {
+        if (EasyPermissions.hasPermissions(activity, permissions)) {
+            initiateBackup(activity, files, listener);
+        } else {
+            Log.e(TAG, "Process Stopped !! Storage permissions error.");
+        }
+    }
+
+    private void initiateBackup(Activity activity, ArrayList<File> files, DICallBack<DIFile> listener) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             activity.startForegroundService(new Intent(activity, DIRestoreService.class));
         } else {
@@ -95,7 +104,16 @@ public class DriveIt {
         DIBackupService.getInstance().startBackup(activity, files, listener);
     }
 
+    @RequiresPermission(allOf = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE})
     public void startRestore(Activity activity, DICallBack<File> listener) {
+        if (EasyPermissions.hasPermissions(activity, permissions)) {
+            initiateRestore(activity, listener);
+        } else {
+            Log.e(TAG, "Process Stopped !! Storage permissions error.");
+        }
+    }
+
+    private void initiateRestore(Activity activity, DICallBack<File> listener) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             activity.startForegroundService(new Intent(activity, DIRestoreService.class));
         } else {

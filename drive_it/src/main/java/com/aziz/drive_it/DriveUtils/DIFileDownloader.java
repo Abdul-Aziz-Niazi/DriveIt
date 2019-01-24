@@ -2,6 +2,7 @@ package com.aziz.drive_it.DriveUtils;
 
 
 import android.util.Log;
+import com.aziz.drive_it.DriveUtils.model.DIFile;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -11,7 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class DIFileDownloader {
+class DIFileDownloader {
 
     private static final String TAG = DIFileDownloader.class.getSimpleName();
 

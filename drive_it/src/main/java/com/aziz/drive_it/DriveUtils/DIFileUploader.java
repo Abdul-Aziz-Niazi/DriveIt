@@ -1,6 +1,7 @@
 package com.aziz.drive_it.DriveUtils;
 
 import android.util.Log;
+import com.aziz.drive_it.DriveUtils.model.DIFile;
 import okhttp3.*;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -10,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class DIFileUploader {
+class DIFileUploader {
 
     private static final String TAG = DIFileUploader.class.getSimpleName();
 

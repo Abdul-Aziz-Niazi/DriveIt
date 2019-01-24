@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
-public class DINetworkHandler {
+class DINetworkHandler {
     private static final String TAG = DINetworkHandler.class.getSimpleName();
     private String AuthToken = "";
     private static DINetworkHandler INSTANCE;

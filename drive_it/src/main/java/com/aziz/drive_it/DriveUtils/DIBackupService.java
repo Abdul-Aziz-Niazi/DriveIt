@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import com.aziz.drive_it.DriveUtils.model.DIFile;
 import com.aziz.drive_it.R;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -21,7 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class DIBackupService extends Service {
+class DIBackupService extends Service {
 
     private static DIBackupService INSTANCE;
     private static final String TAG = DIBackupService.class.getSimpleName();
