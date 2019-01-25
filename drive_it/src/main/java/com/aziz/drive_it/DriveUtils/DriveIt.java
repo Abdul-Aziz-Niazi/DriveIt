@@ -65,12 +65,11 @@ public class DriveIt {
         GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .requestScopes(SCOPE_DRIVE, SCOPE_METADATA, Drive.SCOPE_APPFOLDER, Drive.SCOPE_FILE)
-                .requestIdToken(DIConstants.ClIENT_ID)
                 .build();
         return GoogleSignIn.getClient(context, options);
     }
 
-    public void onActivityResult(Context context, int requestCode, int resultCode, Intent data) throws IOException, GoogleAuthException {
+    public void onActivityResult(Context context, int requestCode, int resultCode, Intent data) {
         this.context = context;
         if (requestCode == 10) {
             Log.d(TAG, "onActivityResult: " + resultCode + " data " + data);
@@ -86,7 +85,6 @@ public class DriveIt {
         new AccountTask().execute(getAccountTask.getResult().getEmail());
     }
 
-    @RequiresPermission(allOf = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE})
     public void startBackup(Activity activity, ArrayList<File> files, DICallBack<DIFile> listener) {
         if (EasyPermissions.hasPermissions(activity, permissions)) {
             initiateBackup(activity, files, listener);
@@ -104,7 +102,6 @@ public class DriveIt {
         DIBackupService.getInstance().startBackup(activity, files, listener);
     }
 
-    @RequiresPermission(allOf = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE})
     public void startRestore(Activity activity, DICallBack<File> listener) {
         if (EasyPermissions.hasPermissions(activity, permissions)) {
             initiateRestore(activity, listener);
