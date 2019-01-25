@@ -26,6 +26,7 @@ android {
 
 }
 def retrofit_version = "2.5.0"
+def versions_work = "1.0.0-beta02"
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -36,5 +37,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
     implementation 'pub.devrel:easypermissions:2.0.1'
     implementation "com.google.android.gms:play-services-drive:16.0.0"
+    implementation "android.arch.work:work-runtime:$versions_work"
+
     implementation("com.google.android.gms:play-services-auth:16.0.0")
 }

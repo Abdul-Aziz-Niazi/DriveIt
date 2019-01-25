@@ -1,18 +1,15 @@
 package com.aziz.drive_it.DriveUtils;
 
 import android.Manifest;
-import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Build;
-import android.support.annotation.RequiresPermission;
 import android.util.Log;
+import androidx.work.*;
 import com.aziz.drive_it.DriveUtils.model.DIFile;
-import com.google.android.gms.auth.GoogleAuthException;
-import com.google.android.gms.auth.GoogleAuthUtil;
-import com.google.android.gms.auth.UserRecoverableAuthException;
+import com.aziz.drive_it.DriveUtils.model.Frequency;
+import com.aziz.drive_it.DriveUtils.utils.DIUtils;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -20,14 +17,19 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.tasks.Task;
+import com.google.gson.reflect.TypeToken;
 import pub.devrel.easypermissions.EasyPermissions;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
 
 public class DriveIt {
     private static final String TAG = DriveIt.class.getSimpleName();
@@ -82,7 +84,7 @@ public class DriveIt {
         if (getAccountTask.getResult() == null)
             return;
         Log.d("RESULT:", "request: " + requestCode + " result:" + resultCode + " " + getAccountTask.getResult().getIdToken());
-        new AccountTask().execute(getAccountTask.getResult().getEmail());
+        new AccountTask(context).execute(getAccountTask.getResult().getEmail());
     }
 
     public void startBackup(Activity activity, ArrayList<File> files, DICallBack<DIFile> listener) {
@@ -119,28 +121,23 @@ public class DriveIt {
         DIRestoreService.getInstance().startRestore(activity, listener);
     }
 
-    public class AccountTask extends AsyncTask<String, Void, Void> {
+    public void setAutoBackup(Frequency frequency, String[] fileArrayList, DICallBack<DIFile> fileDICallBack) {
+        Log.d(TAG, "setAutoBackup: Schedule for " + frequency.getFrequency() + " days");
+        PeriodicWorkRequest.Builder workRequest = new PeriodicWorkRequest.Builder(DIAutoBackup.class, frequency.getFrequency(), TimeUnit.MINUTES, 5, TimeUnit.MINUTES);
+        workRequest.addTag(DIConstants.BACKUP_SCHEDULE);
+        Constraints workConstraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .setRequiresCharging(false)
+                .setRequiresStorageNotLow(false)
+                .build();
+        Data.Builder inputData = new Data.Builder();
+        Type type = new TypeToken<ArrayList<File>>() {
+        }.getType();
+        inputData.putStringArray(DIConstants.DATA, fileArrayList);
 
-        @Override
-        protected Void doInBackground(String... account) {
-            try {
-                String token = GoogleAuthUtil.getToken(context, new Account(account[0], GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE),
-                        "oauth2:profile email https://www.googleapis.com/auth/drive.appdata "
-                                + "https://www.googleapis.com/auth/drive.file "
-                                + "https://www.googleapis.com/auth/drive.metadata "
-                                + "https://www.googleapis.com/auth/drive"
-                );
-                Log.d(TAG, "onActivityResult: TOKEN " + token);
-                DINetworkHandler.getInstance().setAuthToken("Bearer " + token);
-
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (GoogleAuthException e) {
-                ((Activity) context).startActivityForResult(((UserRecoverableAuthException) e).getIntent(), 10);
-            }
-            return null;
-        }
+        workRequest.setInputData(inputData.build());
+        workRequest.setConstraints(workConstraints);
+        WorkManager.getInstance().enqueueUniquePeriodicWork(DIConstants.BACKUP_SCHEDULE, ExistingPeriodicWorkPolicy.REPLACE, workRequest.build());
     }
 
     public void writeFile(File sourceFile, String destFile) throws IOException {
@@ -160,5 +157,6 @@ public class DriveIt {
             sourceFile.delete();
         }
     }
+
 
 }
