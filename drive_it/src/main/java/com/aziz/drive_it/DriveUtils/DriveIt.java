@@ -140,6 +140,10 @@ public class DriveIt {
         WorkManager.getInstance().enqueueUniquePeriodicWork(DIConstants.BACKUP_SCHEDULE, ExistingPeriodicWorkPolicy.REPLACE, workRequest.build());
     }
 
+    public void getBackupSize(DICallBack<Long> diCallBack) {
+
+    }
+
     public void writeFile(File sourceFile, String destFile) throws IOException {
         writeFile(sourceFile, new File(destFile));
     }

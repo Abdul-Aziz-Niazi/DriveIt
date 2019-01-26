@@ -19,6 +19,9 @@ interface WebService {
     Call<ResponseBody> get(@Url String endpoint, @HeaderMap Map<String, String> headerMap);
 
     @GET
+    Call<DIFile> getFile(@Url String endpoint, @HeaderMap Map<String, String> headerMap);
+
+    @GET
     Call<ResponseBody> get(@Url String endpoint,
                            @HeaderMap Map<String, String> headers,
                            @QueryMap Map<String, String> query);

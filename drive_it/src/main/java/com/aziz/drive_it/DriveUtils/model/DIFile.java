@@ -7,13 +7,25 @@ import java.util.List;
 
 public class DIFile {
     private String kind;
+    @SerializedName("size")
+    private Long size;
     private String id;
     @SerializedName("name")
     private String name;
     @SerializedName("mimeType")
     private String mimeType;
+    private String modifiedTime;
     @SerializedName("parents")
     private List<String> parents = new ArrayList<>();
+
+
+    public Long getSize() {
+        return size;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
+    }
 
     public String getKind() {
         return kind;
@@ -55,10 +67,22 @@ public class DIFile {
         this.parents = parents;
     }
 
+
+    public String getModifiedTime() {
+        return modifiedTime;
+    }
+
+    public void setModifiedTime(String modifiedTime) {
+        this.modifiedTime = modifiedTime;
+    }
+
     @Override
     public String toString() {
         return "\n\nid " + getId() + "\n"
                 + "name " + getName() + "\n"
+                + "mDate " + getModifiedTime() + "\n"
+                + "size " + getSize() + "\n"
                 + "mime " + getMimeType();
     }
+
 }
