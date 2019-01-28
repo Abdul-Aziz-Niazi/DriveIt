@@ -83,7 +83,7 @@ class DIBackupService extends Service {
         DIFile diFile = new DIFile();
         diFile.setName("" + file.getName());
         diFile.setParents(Collections.singletonList("appDataFolder"));
-        Call<DIFile> call = DINetworkHandler.getInstance().getWebService().post(DIConstants.LIST_FILES, DINetworkHandler.getInstance().getHeaders(), diFile);
+        Call<DIFile> call = DINetworkHandler.getWebService().post(DIConstants.LIST_FILES, DINetworkHandler.getHeaders(), diFile);
         call.enqueue(new Callback<DIFile>() {
             @Override
             public void onResponse(Call<DIFile> call, Response<DIFile> response) {
@@ -157,6 +157,7 @@ class DIBackupService extends Service {
         notificationCompat.setSound(null);
         notificationManager.notify(NOTIFICATION_ID, notificationCompat.build());
         if (count == total) {
+            DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
             removeNotification();
             createNotification(context, 1);
             stopSelf();

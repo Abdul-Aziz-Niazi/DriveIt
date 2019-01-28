@@ -19,10 +19,10 @@ import java.util.concurrent.TimeUnit;
 
 class DINetworkHandler {
     private static final String TAG = DINetworkHandler.class.getSimpleName();
-    private String AuthToken = "";
+    private static String AuthToken = "";
     private static DINetworkHandler INSTANCE;
-    private final WebService webService;
-    private HashMap<String, String> headers = new HashMap<>();
+    private static WebService webService = null;
+    private static HashMap<String, String> headers = new HashMap<>();
 
     private DINetworkHandler() {
         OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
@@ -46,28 +46,25 @@ class DINetworkHandler {
         return INSTANCE;
     }
 
-    HashMap<String, String> getHeaders() {
+    static HashMap<String, String> getHeaders() {
         headers.put("Authorization", getAuthToken());
         headers.put("Accept", "application/json");
         Log.d(TAG, "getHeaders: " + headers);
         return headers;
     }
 
-    WebService getWebService() {
+    static WebService getWebService() {
         return webService;
     }
 
 
-    private String getAuthToken() {
+    private static String getAuthToken() {
         return AuthToken;
     }
 
     void setAuthToken(String authToken) {
         AuthToken = authToken;
     }
-
-
-
 
 
 }

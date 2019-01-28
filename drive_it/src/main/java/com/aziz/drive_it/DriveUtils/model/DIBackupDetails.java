@@ -3,8 +3,8 @@ package com.aziz.drive_it.DriveUtils.model;
 import java.util.Date;
 
 public class DIBackupDetails {
-    private Long lastBackup;
-    private Long backupSize;
+    private Long lastBackup = 0L;
+    private Long backupSize = 0L;
 
     public Long getLastBackup() {
         return lastBackup;

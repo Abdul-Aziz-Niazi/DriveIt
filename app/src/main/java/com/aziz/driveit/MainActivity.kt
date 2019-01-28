@@ -8,12 +8,12 @@ import android.util.Log
 import com.aziz.drive_it.DriveUtils.DICallBack
 import com.aziz.drive_it.DriveUtils.model.DIFile
 import com.aziz.drive_it.DriveUtils.DriveIt
+import com.aziz.drive_it.DriveUtils.model.DIBackupDetails
 import com.aziz.drive_it.DriveUtils.model.Frequency
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
-    private val SIGN_IN_REQUEST: Int = 100
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,7 +24,32 @@ class MainActivity : AppCompatActivity() {
         signOut.setOnClickListener {
             DriveIt.getInstance().signOut()
         }
+        delete.setOnClickListener {
+            DriveIt.getInstance().deleteBackup(this@MainActivity, object : DICallBack<DIFile> {
+                override fun success(file: DIFile?) {
+                    Log.d("MAIN", "DELETED file " + file)
+
+                }
+
+                override fun failure(error: String?) {
+                    Log.d("MAIN", "Failed DELETE " + error)
+                }
+            })
+        }
+        updateOne.setOnClickListener {
+            val file = File(Environment.getExternalStorageDirectory().absolutePath + "/Upload", "DATA.txt")
+            DriveIt.getInstance().backupOrUpdateOne(file, object : DICallBack<DIFile> {
+                override fun success(DIObject: DIFile?) {
+                    Log.d("MAIN", "Updated " + DIObject!!.name)
+                }
+
+                override fun failure(error: String?) {
+                    Log.d("MAIN", "Update failed " + error)
+                }
+            })
+        }
         auto_backup.setOnClickListener {
+
             val fileList = ArrayList<File>()
             val uploads = File(Environment.getExternalStorageDirectory().absolutePath + "/Upload")
             Log.d("MAIN", "FILE exists " + uploads.exists())
@@ -41,6 +66,20 @@ class MainActivity : AppCompatActivity() {
                     Log.d("MAIN", "$error")
                 }
             })
+        }
+
+        details.setOnClickListener {
+            backup_size.setText("updating")
+            DriveIt.getInstance().getBackupSize(object : DICallBack<DIBackupDetails> {
+                override fun success(details: DIBackupDetails?) {
+                    backup_size.setText("size " + details!!.backupSize + " time " + details!!.lastBackup)
+                }
+
+                override fun failure(error: String?) {
+                    backup_size.setText("Error " + error)
+                }
+            })
+
         }
         backup.setOnClickListener {
             val fileList = ArrayList<File>()

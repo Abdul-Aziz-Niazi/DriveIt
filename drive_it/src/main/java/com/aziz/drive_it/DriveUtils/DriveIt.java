@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 import androidx.work.*;
+import com.aziz.drive_it.DriveUtils.model.DIBackupDetails;
 import com.aziz.drive_it.DriveUtils.model.DIFile;
 import com.aziz.drive_it.DriveUtils.model.Frequency;
 import com.aziz.drive_it.DriveUtils.utils.DIUtils;
@@ -95,6 +96,13 @@ public class DriveIt {
         }
     }
 
+    public void backupOrUpdateOne(File file, DICallBack<DIFile> diFileDICallBack) {
+        if (file.isDirectory()) {
+            diFileDICallBack.failure("File is directory");
+        }
+        DIFileUpdater.update(file, diFileDICallBack);
+    }
+
     private void initiateBackup(Activity activity, ArrayList<File> files, DICallBack<DIFile> listener) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             activity.startForegroundService(new Intent(activity, DIRestoreService.class));
@@ -140,7 +148,29 @@ public class DriveIt {
         WorkManager.getInstance().enqueueUniquePeriodicWork(DIConstants.BACKUP_SCHEDULE, ExistingPeriodicWorkPolicy.REPLACE, workRequest.build());
     }
 
-    public void getBackupSize(DICallBack<Long> diCallBack) {
+    public void getBackupSize(final DICallBack<DIBackupDetails> diCallBack) {
+        DIBackupDetailsRepository.getINSTANCE().getBackupDetails(new DICallBack<DIBackupDetails>() {
+            @Override
+            public void success(DIBackupDetails details) {
+                Log.d(TAG, "success: size:" + details.getBackupSize() + " time:" + details.getLastBackup());
+                diCallBack.success(details);
+            }
+
+            @Override
+            public void failure(String error) {
+                diCallBack.failure(error);
+                Log.d(TAG, "failure: " + error);
+            }
+        });
+    }
+
+    public void deleteBackup(Activity activity, DICallBack<DIFile> diFileDICallBack) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            activity.startService(new Intent(activity, DIDeleteBackupService.class));
+        } else {
+            activity.startService(new Intent(activity, DIDeleteBackupService.class));
+        }
+        DIDeleteBackupService.getInstance().deleteAll(activity, diFileDICallBack);
 
     }
 

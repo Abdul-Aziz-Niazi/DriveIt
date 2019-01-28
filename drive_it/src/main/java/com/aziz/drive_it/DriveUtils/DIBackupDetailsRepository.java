@@ -23,16 +23,16 @@ import java.util.Locale;
 
 public class DIBackupDetailsRepository {
     private static final String TAG = DIBackupDetailsRepository.class.getSimpleName();
-    private DIBackupDetailsRepository INSTANCE;
-    private boolean backupChanged;
+    private static DIBackupDetailsRepository INSTANCE;
+    private boolean backupChanged = true;
     private int count = 0;
+    private DIBackupDetails backupDetails;
     private int total;
-    private Long totalSize;
-    private ArrayList<Date> time;
+    private Long totalSize = 0L;
+    private ArrayList<Date> time = new ArrayList<>();
     private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH);
-    private boolean firstSuccess = true;
 
-    public DIBackupDetailsRepository getINSTANCE() {
+    public static DIBackupDetailsRepository getINSTANCE() {
         if (INSTANCE == null)
             INSTANCE = new DIBackupDetailsRepository();
         return INSTANCE;
@@ -44,16 +44,20 @@ public class DIBackupDetailsRepository {
 
 
     public void getBackupDetails(final DICallBack<DIBackupDetails> callBack) {
+        if (!backupChanged && backupDetails != null) {
+            callBack.success(backupDetails);
+            return;
+        }
         DIBackupDetails backupDetails = new DIBackupDetails();
-        Call<ResponseBody> call = DINetworkHandler.getInstance().getWebService()
+        Call<ResponseBody> call = DINetworkHandler.getWebService()
                 .get(DIConstants.LIST_FILES + "?spaces=appDataFolder&OrderBy=timeModified desc",
-                        DINetworkHandler.getInstance().getHeaders());
+                        DINetworkHandler.getHeaders());
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
                     if (response.isSuccessful()) {
-                        handleSuccess(response);
+                        handleSuccess(response, callBack);
                     } else {
                         String failure = response.errorBody().string();
                         callBack.failure("listing-error " + failure);
@@ -81,13 +85,18 @@ public class DIBackupDetailsRepository {
         Type typeToken = new TypeToken<ArrayList<DIFile>>() {
         }.getType();
         diFileArrayList = DIUtils.getGson().fromJson(data.toString(), typeToken);
+        if (diFileArrayList.size() == 0) {
+            listener.success(new DIBackupDetails());
+        }
         total = diFileArrayList.size();
         count = 0;
-
+        totalSize = 0L;
+        time = new ArrayList<>();
         for (DIFile file : diFileArrayList) {
             collectDetails(file.getId(), new DICallBack<DIFile>() {
                 @Override
                 public void success(DIFile file) {
+                    Log.d(TAG, "in-loop-success: " + file.toString());
                     count++;
                     totalSize += file.getSize();
                     try {
@@ -96,19 +105,31 @@ public class DIBackupDetailsRepository {
                         e.printStackTrace();
                     }
                     if (count == total) {
-                        DIBackupDetails diBackupDetails = new DIBackupDetails();
-                        diBackupDetails.setBackupSize(totalSize);
-                        diBackupDetails.setLastBackup(time.get(0).getTime());
-                        listener.success();
+                        onComplete();
                     }
 
+                }
+
+                private void onComplete() {
+                    DIBackupDetails diBackupDetails = new DIBackupDetails();
+                    diBackupDetails.setBackupSize(totalSize);
+                    if (time.size() == 0) {
+                        Log.d(TAG, "onComplete: couldn't capture time");
+                        diBackupDetails.setLastBackup(new Date().getTime());
+                    } else {
+                        Log.d(TAG, "onComplete: time: " + time.get(0));
+                        diBackupDetails.setLastBackup(time.get(0).getTime());
+                    }
+                    backupDetails = diBackupDetails;
+                    backupChanged = false;
+                    listener.success(diBackupDetails);
                 }
 
                 @Override
                 public void failure(String error) {
                     count++;
                     if (count == total) {
-
+                        onComplete();
                     }
                 }
             });
@@ -116,20 +137,20 @@ public class DIBackupDetailsRepository {
     }
 
     private void collectDetails(String id, final DICallBack<DIFile> diCallBack) {
-
-        Call<DIFile> call = DINetworkHandler.getInstance().getWebService().getFile(DIConstants.LIST_FILES + id + "?fields=size,modifiedTime", DINetworkHandler.getInstance().getHeaders());
+        Log.d(TAG, "collectDetails: file: " + id);
+        Call<DIFile> call = DINetworkHandler.getWebService().getFile(DIConstants.LIST_FILES + id + "?fields=size,modifiedTime", DINetworkHandler.getHeaders());
 
         call.enqueue(new Callback<DIFile>() {
             @Override
             public void onResponse(Call<DIFile> call, Response<DIFile> response) {
-                if (!response.isSuccessful()) {
+                if (response.isSuccessful()) {
                     DIFile file = response.body();
-                    Log.d(TAG, "onResponse: " + file.toString());
+                    Log.d(TAG, "onResponse: collecting " + file.toString());
                     diCallBack.success(file);
                 } else {
                     try {
-                        diCallBack.failure("file size error " + response.errorBody().string());
-                    } catch (IOException e) {
+                        diCallBack.failure("file size error ");
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }

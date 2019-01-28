@@ -18,6 +18,13 @@ public class DIFile {
     @SerializedName("parents")
     private List<String> parents = new ArrayList<>();
 
+    public DIFile(String id) {
+        this.id = id;
+    }
+
+    public DIFile() {
+
+    }
 
     public Long getSize() {
         return size;

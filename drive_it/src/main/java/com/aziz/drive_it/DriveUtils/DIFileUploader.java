@@ -16,13 +16,12 @@ class DIFileUploader {
     private static final String TAG = DIFileUploader.class.getSimpleName();
 
     public static void uploadFile(DIFile diFile, File file, final DICallBack<DIFile> callBack) {
-//        MultipartBody.Part part = MultipartBody.Part.create(RequestBody.create(MediaType.parse("text/*"), file));
         RequestBody body = RequestBody.create(MediaType.parse("image/*"), file);
-        HashMap<String, String> headers = new HashMap<>(DINetworkHandler.getInstance().getHeaders());
+        HashMap<String, String> headers = new HashMap<>(DINetworkHandler.getHeaders());
         Log.d(TAG, "uploadFile: headers " + headers);
-        retrofit2.Call<DIFile> call = DINetworkHandler.getInstance().getWebService()
+        retrofit2.Call<DIFile> call = DINetworkHandler.getWebService()
                 .patch(DIConstants.UPLD_FILES + diFile.getId()+"?uploadType=media",
-                        DINetworkHandler.getInstance().getHeaders(), body);
+                        DINetworkHandler.getHeaders(), body);
         call.enqueue(new Callback<DIFile>() {
             @Override
             public void onResponse(Call<DIFile> call, Response<DIFile> response) {
