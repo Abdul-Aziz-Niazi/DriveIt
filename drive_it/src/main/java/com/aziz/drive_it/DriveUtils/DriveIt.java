@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import androidx.work.*;
 import com.aziz.drive_it.DriveUtils.model.DIBackupDetails;
@@ -17,6 +18,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.drive.Drive;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.gson.reflect.TypeToken;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -56,15 +58,25 @@ public class DriveIt {
         }
     }
 
-    public void silentSignIn(Context context, DICallBack<GoogleSignInAccount> callBack) {
+    public void silentSignIn(Context context, final DICallBack<GoogleSignInAccount> callBack) {
         signInClient = buildSignInClient(context);
         if (GoogleSignIn.getLastSignedInAccount(context) != null) {
             callBack.success(GoogleSignIn.getLastSignedInAccount(context));
         } else if (signInClient != null) {
-            GoogleSignInAccount signInAccount = signInClient.silentSignIn().getResult();
-            if (signInAccount != null)
-                callBack.success(signInAccount);
-        }else{
+            final Task<GoogleSignInAccount> googleSignInAccountTask = signInClient.silentSignIn();
+
+            if (googleSignInAccountTask != null) {
+                googleSignInAccountTask.addOnCompleteListener(new OnCompleteListener<GoogleSignInAccount>() {
+                    @Override
+                    public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
+                        GoogleSignInAccount result = task.getResult();
+                        if (result != null)
+                            callBack.success(result);
+                    }
+                });
+            }
+
+        } else {
             callBack.failure("Silent Sign in failed");
         }
     }
