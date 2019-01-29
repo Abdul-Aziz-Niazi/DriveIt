@@ -69,10 +69,14 @@ public class DriveIt {
                 googleSignInAccountTask.addOnCompleteListener(new OnCompleteListener<GoogleSignInAccount>() {
                     @Override
                     public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
-                        GoogleSignInAccount result = task.getResult();
-                        if (task.isSuccessful() && result != null){
-                            callBack.success(result);
-                        }else{
+                        if (task.isSuccessful()) {
+                            GoogleSignInAccount result = task.getResult();
+                            if (result != null)
+                                callBack.success(result);
+                            else
+                                callBack.failure("Silent Sign in failed");
+
+                        } else {
                             callBack.failure("Silent Sign in failed");
                         }
                     }
