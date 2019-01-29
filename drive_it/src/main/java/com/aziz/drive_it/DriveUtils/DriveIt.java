@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import androidx.work.*;
 import com.aziz.drive_it.DriveUtils.model.DIBackupDetails;
@@ -55,6 +56,13 @@ public class DriveIt {
         signInClient = buildSignInClient(context);
         if (context instanceof Activity) {
             ((Activity) context).startActivityForResult(signInClient.getSignInIntent(), DIConstants.REQUEST_BACKUP);
+        }
+    }
+
+    public void signIn(Fragment host) {
+        if (host != null) {
+            signInClient = buildSignInClient(host.getContext());
+            host.startActivityForResult(signInClient.getSignInIntent(), DIConstants.REQUEST_BACKUP);
         }
     }
 
