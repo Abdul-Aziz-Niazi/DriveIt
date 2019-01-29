@@ -66,7 +66,7 @@ public class DriveIt {
         }
     }
 
-    public void silentSignIn(Context context, final DICallBack<GoogleSignInAccount> callBack) {
+    public void silentSignIn(final Context context, final DICallBack<GoogleSignInAccount> callBack) {
         signInClient = buildSignInClient(context);
         if (GoogleSignIn.getLastSignedInAccount(context) != null) {
             callBack.success(GoogleSignIn.getLastSignedInAccount(context));
@@ -79,9 +79,10 @@ public class DriveIt {
                     public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
                         if (task.isSuccessful()) {
                             GoogleSignInAccount result = task.getResult();
-                            if (result != null)
+                            if (result != null) {
                                 callBack.success(result);
-                            else
+                                new AccountTask(context).execute(result.getEmail());
+                            } else
                                 callBack.failure("Silent Sign in failed");
 
                         } else {
