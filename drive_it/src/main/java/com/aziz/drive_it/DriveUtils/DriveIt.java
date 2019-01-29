@@ -148,6 +148,10 @@ public class DriveIt {
         WorkManager.getInstance().enqueueUniquePeriodicWork(DIConstants.BACKUP_SCHEDULE, ExistingPeriodicWorkPolicy.REPLACE, workRequest.build());
     }
 
+    public void cancelAutoBackup() {
+        WorkManager.getInstance().cancelAllWorkByTag(DIConstants.BACKUP_SCHEDULE);
+    }
+
     public void getBackupSize(final DICallBack<DIBackupDetails> diCallBack) {
         DIBackupDetailsRepository.getINSTANCE().getBackupDetails(new DICallBack<DIBackupDetails>() {
             @Override

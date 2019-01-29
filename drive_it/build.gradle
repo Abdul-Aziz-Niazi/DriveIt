@@ -3,13 +3,13 @@ apply plugin: 'com.github.dcendents.android-maven'
 group = 'com.github.Abdul-Aziz-Niazi'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 27
 
 
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 28
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
 
@@ -26,12 +26,10 @@ android {
 
 }
 def retrofit_version = "2.5.0"
-def versions_work = "1.0.0-beta02"
+def versions_work = "1.0.0-beta03"
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-    implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
