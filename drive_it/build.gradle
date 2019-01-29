@@ -36,6 +36,9 @@ dependencies {
     implementation 'pub.devrel:easypermissions:2.0.1'
     implementation "com.google.android.gms:play-services-drive:16.0.0"
     implementation "android.arch.work:work-runtime:$versions_work"
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:support-vector-drawable:27.1.1'
+    implementation 'com.android.support:support-core-utils:27.1.1'
 
     implementation("com.google.android.gms:play-services-auth:16.0.0")
 }
