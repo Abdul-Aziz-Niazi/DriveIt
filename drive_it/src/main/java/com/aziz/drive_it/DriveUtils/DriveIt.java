@@ -56,6 +56,19 @@ public class DriveIt {
         }
     }
 
+    public void silentSignIn(Context context, DICallBack<GoogleSignInAccount> callBack) {
+        signInClient = buildSignInClient(context);
+        if (GoogleSignIn.getLastSignedInAccount(context) != null) {
+            callBack.success(GoogleSignIn.getLastSignedInAccount(context));
+        } else if (signInClient != null) {
+            GoogleSignInAccount signInAccount = signInClient.silentSignIn().getResult();
+            if (signInAccount != null)
+                callBack.success(signInAccount);
+        }else{
+            callBack.failure("Silent Sign in failed");
+        }
+    }
+
     public void signOut() {
         if (signInClient != null)
             signInClient.signOut();
