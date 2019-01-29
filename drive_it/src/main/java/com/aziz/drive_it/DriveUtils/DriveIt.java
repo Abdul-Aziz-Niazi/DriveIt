@@ -70,8 +70,11 @@ public class DriveIt {
                     @Override
                     public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
                         GoogleSignInAccount result = task.getResult();
-                        if (result != null)
+                        if (task.isSuccessful() && result != null){
                             callBack.success(result);
+                        }else{
+                            callBack.failure("Silent Sign in failed");
+                        }
                     }
                 });
             }
