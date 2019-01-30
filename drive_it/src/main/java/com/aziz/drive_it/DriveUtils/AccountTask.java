@@ -9,7 +9,7 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 
 import java.io.IOException;
 
-public class AccountTask extends AsyncTask<String, Void, Void> {
+public class AccountTask extends AsyncTask<String, String, String> {
     private static final String TAG = AccountTask.class.getSimpleName();
     private Context context;
     private DICallBack<String> callBack;
@@ -20,7 +20,7 @@ public class AccountTask extends AsyncTask<String, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(String... account) {
+    protected String doInBackground(String... account) {
         try {
             String token = GoogleAuthUtil.getToken(context, new Account(account[0], GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE),
                     "oauth2:profile email https://www.googleapis.com/auth/drive.appdata "
@@ -31,9 +31,7 @@ public class AccountTask extends AsyncTask<String, Void, Void> {
 
             Log.d(TAG, "onActivityResult: TOKEN " + token);
             DINetworkHandler.getInstance().setAuthToken("Bearer " + token);
-            if (callBack != null)
-                callBack.success(token);
-
+            return token;
         } catch (IOException e) {
             if (callBack != null)
                 callBack.failure(e.getMessage());
@@ -44,5 +42,14 @@ public class AccountTask extends AsyncTask<String, Void, Void> {
 //            ((Activity) context).startActivityForResult(((UserRecoverableAuthException) e).getIntent(), 10);
         }
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(String token) {
+        super.onPostExecute(token);
+
+        if (callBack != null)
+            callBack.success(token);
+
     }
 }

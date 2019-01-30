@@ -22,6 +22,8 @@ import com.google.android.gms.drive.Drive;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.gson.reflect.TypeToken;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import pub.devrel.easypermissions.EasyPermissions;
 
 import java.io.File;
@@ -31,7 +33,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 
@@ -39,11 +40,14 @@ public class DriveIt {
     private static final String TAG = DriveIt.class.getSimpleName();
     private static DriveIt INSTANCE;
     private GoogleSignInClient signInClient;
+    private DICallBack<String> signInCallBack;
     private ArrayList<File> fileArrayList = new ArrayList<>();
     private Context context;
     private String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private DICallBack<DIBackupDetails> autoBackupCallback;
 
     private DriveIt() {
+        EventBus.getDefault().register(this);
     }
 
     synchronized public static DriveIt getInstance() {
@@ -52,14 +56,16 @@ public class DriveIt {
         return INSTANCE;
     }
 
-    public void signIn(Context context) {
+    public void signIn(Context context, DICallBack<String> signInCallBack) {
         signInClient = buildSignInClient(context);
+        this.signInCallBack = signInCallBack;
         if (context instanceof Activity) {
             ((Activity) context).startActivityForResult(signInClient.getSignInIntent(), DIConstants.REQUEST_BACKUP);
         }
     }
 
-    public void signIn(Fragment host) {
+    public void signIn(Fragment host, DICallBack<String> signInCallBack) {
+        this.signInCallBack = signInCallBack;
         if (host != null) {
             signInClient = buildSignInClient(host.getContext());
             host.startActivityForResult(signInClient.getSignInIntent(), DIConstants.REQUEST_BACKUP);
@@ -145,7 +151,7 @@ public class DriveIt {
         if (getAccountTask.getResult() == null)
             return;
         Log.d("RESULT:", "request: " + requestCode + " result:" + resultCode + " " + getAccountTask.getResult().getIdToken());
-        new AccountTask(context, null).execute(getAccountTask.getResult().getEmail());
+        new AccountTask(context, signInCallBack).execute(getAccountTask.getResult().getEmail());
     }
 
     public void startBackup(Activity activity, ArrayList<File> files, DICallBack<DIFile> listener) {
@@ -189,9 +195,13 @@ public class DriveIt {
         DIRestoreService.getInstance().startRestore(activity, listener);
     }
 
-    public void setAutoBackup(Frequency frequency, String[] fileArrayList, DICallBack<DIFile> fileDICallBack) {
+    public void setAutoBackup(Frequency frequency, String[] filePaths, DICallBack<DIBackupDetails> autoBackupCallback) {
+        this.autoBackupCallback = autoBackupCallback;
         Log.d(TAG, "setAutoBackup: Schedule for " + frequency.getFrequency() + " days");
-        PeriodicWorkRequest.Builder workRequest = new PeriodicWorkRequest.Builder(DIAutoBackup.class, frequency.getFrequency(), TimeUnit.MINUTES, 5, TimeUnit.MINUTES);
+
+        PeriodicWorkRequest.Builder workRequest = new PeriodicWorkRequest.Builder(DIAutoBackup.class, frequency.getFrequency(),
+                frequency == Frequency.TEST ? TimeUnit.MINUTES : TimeUnit.DAYS, 5, TimeUnit.MINUTES);
+
         workRequest.addTag(DIConstants.BACKUP_SCHEDULE);
         Constraints workConstraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -201,8 +211,7 @@ public class DriveIt {
         Data.Builder inputData = new Data.Builder();
         Type type = new TypeToken<ArrayList<File>>() {
         }.getType();
-        inputData.putStringArray(DIConstants.DATA, fileArrayList);
-
+        inputData.putStringArray(DIConstants.DATA, filePaths);
         workRequest.setInputData(inputData.build());
         workRequest.setConstraints(workConstraints);
         WorkManager.getInstance().enqueueUniquePeriodicWork(DIConstants.BACKUP_SCHEDULE, ExistingPeriodicWorkPolicy.REPLACE, workRequest.build());
@@ -256,5 +265,18 @@ public class DriveIt {
         }
     }
 
+    @Subscribe
+    public void autoBackupSuccessful(DIBackupDetails backupDetails) {
+        Log.d(TAG, "autoBackupSuccessful: " + backupDetails.getError());
+        if (backupDetails.getError() != null)
+            autoBackupCallback.success(backupDetails);
+        else
+            autoBackupCallback.failure(backupDetails.getError());
+    }
 
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        EventBus.getDefault().unregister(this);
+    }
 }

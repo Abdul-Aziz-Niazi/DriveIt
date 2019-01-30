@@ -11,8 +11,10 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import com.aziz.drive_it.DriveUtils.model.DIBackupDetails;
 import com.aziz.drive_it.DriveUtils.model.DIFile;
 import com.aziz.drive_it.R;
+import org.greenrobot.eventbus.EventBus;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -141,6 +143,19 @@ class DIBackupService extends Service {
             } else {
                 notificationCompat.setContentTitle("Backup Complete");
                 notificationCompat.setContentText(total + " files");
+                DIBackupDetailsRepository.getINSTANCE().getBackupDetails(new DICallBack<DIBackupDetails>() {
+                    @Override
+                    public void success(DIBackupDetails details) {
+                        EventBus.getDefault().post(details);
+                    }
+
+                    @Override
+                    public void failure(String error) {
+                        DIBackupDetails errorDetails = new DIBackupDetails();
+                        errorDetails.setError(error);
+                        EventBus.getDefault().post(errorDetails);
+                    }
+                });
             }
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)

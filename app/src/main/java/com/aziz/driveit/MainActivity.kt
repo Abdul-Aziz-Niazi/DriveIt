@@ -19,7 +19,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         signIn.setOnClickListener {
-            DriveIt.getInstance().signIn(this@MainActivity)
+            DriveIt.getInstance().signIn(this@MainActivity, object : DICallBack<String> {
+                override fun success(DIObject: String?) {
+
+                }
+
+                override fun failure(error: String?) {
+
+                }
+            })
         }
         signOut.setOnClickListener {
             DriveIt.getInstance().signOut()
@@ -57,13 +65,13 @@ class MainActivity : AppCompatActivity() {
             for (i in 0 until uploads.listFiles().size) {
                 paths[i] = uploads.listFiles()[i].absolutePath
             }
-            DriveIt.getInstance().setAutoBackup(Frequency.TEST, paths, object : DICallBack<DIFile> {
-                override fun success(file: DIFile?) {
-                    Log.d("MAIN", "AUTO-Backup ${file!!.name}")
+            DriveIt.getInstance().setAutoBackup(Frequency.TEST, paths, object : DICallBack<DIBackupDetails> {
+                override fun success(DIObject: DIBackupDetails?) {
+
                 }
 
                 override fun failure(error: String?) {
-                    Log.d("MAIN", "$error")
+
                 }
             })
         }
