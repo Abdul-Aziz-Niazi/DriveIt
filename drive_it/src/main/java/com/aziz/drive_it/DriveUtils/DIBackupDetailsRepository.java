@@ -48,8 +48,9 @@ public class DIBackupDetailsRepository {
             callBack.success(backupDetails);
             return;
         }
+        DINetworkHandler networkHandler = DINetworkHandler.getInstance();
         DIBackupDetails backupDetails = new DIBackupDetails();
-        Call<ResponseBody> call = DINetworkHandler.getWebService()
+        Call<ResponseBody> call = DINetworkHandler.getInstance().getWebService()
                 .get(DIConstants.LIST_FILES + "?spaces=appDataFolder&OrderBy=timeModified desc",
                         DINetworkHandler.getHeaders());
         call.enqueue(new Callback<ResponseBody>() {
@@ -138,7 +139,7 @@ public class DIBackupDetailsRepository {
 
     private void collectDetails(String id, final DICallBack<DIFile> diCallBack) {
         Log.d(TAG, "collectDetails: file: " + id);
-        Call<DIFile> call = DINetworkHandler.getWebService().getFile(DIConstants.LIST_FILES + id + "?fields=size,modifiedTime", DINetworkHandler.getHeaders());
+        Call<DIFile> call = DINetworkHandler.getInstance().getWebService().getFile(DIConstants.LIST_FILES + id + "?fields=size,modifiedTime", DINetworkHandler.getHeaders());
 
         call.enqueue(new Callback<DIFile>() {
             @Override

@@ -18,7 +18,7 @@ public class DIFileLister {
     private static final String TAG = DIFileLister.class.getSimpleName();
 
     public static void list(final DICallBack<ArrayList<DIFile>> callBack) {
-        DINetworkHandler.getWebService()
+        DINetworkHandler.getInstance().getWebService()
                 .get(DIConstants.LIST_FILES + "?spaces=appDataFolder",
                         DINetworkHandler.getHeaders())
                 .enqueue(new Callback<ResponseBody>() {

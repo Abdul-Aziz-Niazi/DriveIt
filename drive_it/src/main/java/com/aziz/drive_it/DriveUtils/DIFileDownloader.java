@@ -18,7 +18,7 @@ class DIFileDownloader {
 
     public static void downloadFile(final String path, DIFile file, final DICallBack<File> callBack) {
         final String name = file.getName();
-        Call<ResponseBody> call = DINetworkHandler.getWebService().get(DIConstants.LIST_FILES + file.getId() + "?alt=media", DINetworkHandler.getHeaders());
+        Call<ResponseBody> call = DINetworkHandler.getInstance().getWebService().get(DIConstants.LIST_FILES + file.getId() + "?alt=media", DINetworkHandler.getHeaders());
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

@@ -14,7 +14,7 @@ class DIFileDeleter {
     private static final String TAG = DIFileDeleter.class.getSimpleName();
 
     static void deleteFile(final String fileId, final DICallBack<DIFile> diFileDICallBack) {
-        Call<ResponseBody> call = DINetworkHandler.getWebService().delete(DIConstants.LIST_FILES + fileId, DINetworkHandler.getHeaders());
+        Call<ResponseBody> call = DINetworkHandler.getInstance().getWebService().delete(DIConstants.LIST_FILES + fileId, DINetworkHandler.getHeaders());
 
         call.enqueue(new Callback<ResponseBody>() {
             @Override

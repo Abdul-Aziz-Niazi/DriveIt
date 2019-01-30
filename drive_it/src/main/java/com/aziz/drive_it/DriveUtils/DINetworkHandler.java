@@ -53,7 +53,7 @@ class DINetworkHandler {
         return headers;
     }
 
-    static WebService getWebService() {
+    public WebService getWebService() {
         return webService;
     }
 
