@@ -12,9 +12,11 @@ import java.io.IOException;
 public class AccountTask extends AsyncTask<String, Void, Void> {
     private static final String TAG = AccountTask.class.getSimpleName();
     private Context context;
+    private DICallBack<String> callBack;
 
-    public AccountTask(Context context) {
+    public AccountTask(Context context, DICallBack<String> callBack) {
         this.context = context;
+        this.callBack = callBack;
     }
 
     @Override
@@ -26,13 +28,19 @@ public class AccountTask extends AsyncTask<String, Void, Void> {
                             + "https://www.googleapis.com/auth/drive.metadata "
                             + "https://www.googleapis.com/auth/drive"
             );
+
             Log.d(TAG, "onActivityResult: TOKEN " + token);
             DINetworkHandler.getInstance().setAuthToken("Bearer " + token);
-
+            if (callBack != null)
+                callBack.success(token);
 
         } catch (IOException e) {
+            if (callBack != null)
+                callBack.failure(e.getMessage());
             e.printStackTrace();
         } catch (GoogleAuthException e) {
+            if (callBack != null)
+                callBack.failure(e.getMessage());
 //            ((Activity) context).startActivityForResult(((UserRecoverableAuthException) e).getIntent(), 10);
         }
         return null;

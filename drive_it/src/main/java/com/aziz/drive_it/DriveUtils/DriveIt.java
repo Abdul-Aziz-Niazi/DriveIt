@@ -78,10 +78,19 @@ public class DriveIt {
                     @Override
                     public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
                         if (task.isSuccessful()) {
-                            GoogleSignInAccount result = task.getResult();
+                            final GoogleSignInAccount result = task.getResult();
                             if (result != null) {
-                                callBack.success(result);
-                                new AccountTask(context).execute(result.getEmail());
+                                new AccountTask(context, new DICallBack<String>() {
+                                    @Override
+                                    public void success(String DIObject) {
+                                        callBack.success(result);
+                                    }
+
+                                    @Override
+                                    public void failure(String error) {
+                                        callBack.failure(error);
+                                    }
+                                }).execute(result.getEmail());
                             } else
                                 callBack.failure("Silent Sign in failed");
 
@@ -126,7 +135,7 @@ public class DriveIt {
         if (getAccountTask.getResult() == null)
             return;
         Log.d("RESULT:", "request: " + requestCode + " result:" + resultCode + " " + getAccountTask.getResult().getIdToken());
-        new AccountTask(context).execute(getAccountTask.getResult().getEmail());
+        new AccountTask(context, null).execute(getAccountTask.getResult().getEmail());
     }
 
     public void startBackup(Activity activity, ArrayList<File> files, DICallBack<DIFile> listener) {
