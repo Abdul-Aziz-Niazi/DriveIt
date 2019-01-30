@@ -68,11 +68,21 @@ public class DriveIt {
 
     public void silentSignIn(final Context context, final DICallBack<GoogleSignInAccount> callBack) {
         signInClient = buildSignInClient(context);
-        if (GoogleSignIn.getLastSignedInAccount(context) != null) {
-            callBack.success(GoogleSignIn.getLastSignedInAccount(context));
+        final GoogleSignInAccount signedInAccount = GoogleSignIn.getLastSignedInAccount(context);
+        if (signedInAccount != null) {
+            new AccountTask(context, new DICallBack<String>() {
+                @Override
+                public void success(String DIObject) {
+                    callBack.success(signedInAccount);
+                }
+
+                @Override
+                public void failure(String error) {
+                    callBack.failure(error);
+                }
+            }).execute(signedInAccount.getEmail());
         } else if (signInClient != null) {
             final Task<GoogleSignInAccount> googleSignInAccountTask = signInClient.silentSignIn();
-
             if (googleSignInAccountTask != null) {
                 googleSignInAccountTask.addOnCompleteListener(new OnCompleteListener<GoogleSignInAccount>() {
                     @Override
