@@ -143,6 +143,7 @@ class DIBackupService extends Service {
             } else {
                 notificationCompat.setContentTitle("Backup Complete");
                 notificationCompat.setContentText(total + " files");
+                DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
                 DIBackupDetailsRepository.getINSTANCE().getBackupDetails(new DICallBack<DIBackupDetails>() {
                     @Override
                     public void success(DIBackupDetails details) {

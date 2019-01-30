@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
             })
         }
         signOut.setOnClickListener {
+
             DriveIt.getInstance().signOut()
         }
         delete.setOnClickListener {

@@ -59,6 +59,7 @@ public class DriveIt {
     public void signIn(Context context, DICallBack<String> signInCallBack) {
         signInClient = buildSignInClient(context);
         this.signInCallBack = signInCallBack;
+        DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
         if (context instanceof Activity) {
             ((Activity) context).startActivityForResult(signInClient.getSignInIntent(), DIConstants.REQUEST_BACKUP);
         }
@@ -66,6 +67,7 @@ public class DriveIt {
 
     public void signIn(Fragment host, DICallBack<String> signInCallBack) {
         this.signInCallBack = signInCallBack;
+        DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
         if (host != null) {
             signInClient = buildSignInClient(host.getContext());
             host.startActivityForResult(signInClient.getSignInIntent(), DIConstants.REQUEST_BACKUP);
@@ -123,11 +125,13 @@ public class DriveIt {
     }
 
     public void signOut() {
-        if (signInClient != null)
+        if (signInClient != null) {
             signInClient.signOut();
+        }
     }
 
     private GoogleSignInClient buildSignInClient(Context context) {
+
         Scope SCOPE_DRIVE = new Scope("https://www.googleapis.com/auth/drive");
         Scope SCOPE_METADATA = new Scope("https://www.googleapis.com/auth/drive.metadata");
 
