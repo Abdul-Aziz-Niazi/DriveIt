@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-class DIAutoBackup extends Worker {
+public class DIAutoBackup extends Worker {
 
     private static final String TAG = DIAutoBackup.class.getSimpleName();
     @NonNull

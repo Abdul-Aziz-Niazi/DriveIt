@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -121,7 +122,8 @@ class DIBackupService extends Service {
                     .setContentTitle("Backup in Progress")
                     .setProgress(10, 0, true)
                     .setSound(null)
-                    .setSmallIcon(R.drawable.ic_gdrive)
+                    .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_drive))
+                    .setSmallIcon(R.drawable.ic_drive)
                     .setContentText("initializing backup");
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -136,7 +138,8 @@ class DIBackupService extends Service {
             notificationCompat = new NotificationCompat
                     .Builder(context, DATA_BACKUP)
                     .setSound(null)
-                    .setSmallIcon(R.drawable.ic_gdrive);
+                    .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_drive))
+                    .setSmallIcon(R.drawable.ic_drive);
             if (count == 0) {
                 notificationCompat.setContentTitle("Backup Failed");
                 notificationCompat.setContentText("Files not found");

@@ -1,12 +1,16 @@
 package com.aziz.drive_it.DriveUtils;
 
 import android.Manifest;
-import android.app.Activity;
+import android.app.*;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import androidx.work.*;
 import com.aziz.drive_it.DriveUtils.model.DIBackupDetails;
@@ -63,6 +67,12 @@ public class DriveIt {
         if (context instanceof Activity) {
             ((Activity) context).startActivityForResult(signInClient.getSignInIntent(), DIConstants.REQUEST_BACKUP);
         }
+    }
+
+    public void setIcon(Context context, @DrawableRes int id) {
+        Log.d(TAG, "setIcon: " + context.getApplicationInfo().packageName + " " + context.getResources().getResourceEntryName(id));
+        Log.d(TAG, "setIcon: " + context.getResources().getIdentifier(context.getResources().getResourceName(id), context.getResources().getResourceTypeName(id), context.getPackageName()));
+        DIConstants.icon = BitmapFactory.decodeResource(context.getResources(), id);
     }
 
     public void signIn(Fragment host, DICallBack<String> signInCallBack) {
@@ -263,9 +273,13 @@ public class DriveIt {
             destFile.createNewFile();
         }
 
-        try (FileChannel source = new FileInputStream(sourceFile).getChannel(); FileChannel destination = new FileOutputStream(destFile).getChannel()) {
+        try {
+            FileChannel source = new FileInputStream(sourceFile).getChannel();
+            FileChannel destination = new FileOutputStream(destFile).getChannel();
             destination.transferFrom(source, 0, source.size());
             sourceFile.delete();
+        } catch (Exception e) {
+
         }
     }
 

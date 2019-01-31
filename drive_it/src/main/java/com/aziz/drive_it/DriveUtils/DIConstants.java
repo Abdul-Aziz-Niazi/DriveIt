@@ -1,5 +1,8 @@
 package com.aziz.drive_it.DriveUtils;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+
 class DIConstants {
     public static final String BASE_URL = "https://www.googleapis.com/";
     public static final String LIST_FILES = "drive/v3/files/";
@@ -10,4 +13,5 @@ class DIConstants {
     public static final String API_KEY = "AIzaSyDDJXV0557j4DOS9SGI7Bhwnv55S0W8V4Y";
     public static final String BACKUP_SCHEDULE = "DI_BACKUP";
     public static final String DATA = "FILE_DATA";
+    public static Bitmap icon;
 }
