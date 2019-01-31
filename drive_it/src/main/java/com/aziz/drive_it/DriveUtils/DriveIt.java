@@ -72,7 +72,8 @@ public class DriveIt {
     public void setIcon(Context context, @DrawableRes int id) {
         Log.d(TAG, "setIcon: " + context.getApplicationInfo().packageName + " " + context.getResources().getResourceEntryName(id));
         Log.d(TAG, "setIcon: " + context.getResources().getIdentifier(context.getResources().getResourceName(id), context.getResources().getResourceTypeName(id), context.getPackageName()));
-        DIConstants.icon = BitmapFactory.decodeResource(context.getResources(), id);
+//        DIConstants.icon = BitmapFactory.decodeResource(context.getResources(), id);
+        DIConstants.SMALL_ICON = id;
     }
 
     public void signIn(Fragment host, DICallBack<String> signInCallBack) {
@@ -226,6 +227,9 @@ public class DriveIt {
         Type type = new TypeToken<ArrayList<File>>() {
         }.getType();
         inputData.putStringArray(DIConstants.DATA, filePaths);
+        if (DIConstants.SMALL_ICON != 0) {
+            inputData.putInt(DIConstants.IC_NOTIFICATION, DIConstants.SMALL_ICON);
+        }
         workRequest.setInputData(inputData.build());
         workRequest.setConstraints(workConstraints);
         WorkManager.getInstance().enqueueUniquePeriodicWork(DIConstants.BACKUP_SCHEDULE, ExistingPeriodicWorkPolicy.REPLACE, workRequest.build());
@@ -286,7 +290,7 @@ public class DriveIt {
     @Subscribe
     public void autoBackupSuccessful(DIBackupDetails backupDetails) {
         Log.d(TAG, "autoBackupSuccessful: " + backupDetails.getError());
-        if (backupDetails.getError() != null)
+        if (backupDetails.getError() == null)
             autoBackupCallback.success(backupDetails);
         else
             autoBackupCallback.failure(backupDetails.getError());
