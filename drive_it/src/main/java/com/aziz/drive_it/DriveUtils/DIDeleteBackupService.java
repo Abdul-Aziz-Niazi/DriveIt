@@ -17,6 +17,7 @@ public class DIDeleteBackupService extends Service {
     private static final String TAG = DIDeleteBackupService.class.getSimpleName();
     private static final int NOTIFICATION_ID = 119;
     private static final String DATA_DELETE = "DATA_DELETE";
+    private boolean show;
     private NotificationCompat.Builder notificationCompat;
     private NotificationManager notificationManager;
     private static DIDeleteBackupService INSTANCE;
@@ -32,6 +33,10 @@ public class DIDeleteBackupService extends Service {
         return INSTANCE;
     }
 
+    public void showNotification(boolean show) {
+        this.show = show;
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -45,6 +50,10 @@ public class DIDeleteBackupService extends Service {
             public void success(ArrayList<DIFile> fileArrayList) {
                 total = fileArrayList.size();
                 count = 0;
+                if (checkEmpty(context)) {
+                    diCallBack.success(null);
+                    return;
+                }
                 for (DIFile file : fileArrayList) {
                     DIFileDeleter.deleteFile(file.getId(), new DICallBack<DIFile>() {
                         @Override
@@ -82,6 +91,14 @@ public class DIDeleteBackupService extends Service {
         });
     }
 
+    private boolean checkEmpty(Context context) {
+        if (total == 0) {
+            createNotification(context);
+            return true;
+        }
+        return false;
+    }
+
 
     void createNotification(Context context) {
         Log.d(TAG, "createNotification: creating notification ");
@@ -97,11 +114,13 @@ public class DIDeleteBackupService extends Service {
         } else {
             notificationCompat.setContentText(total + " total files");
         }
+
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             notificationManager.createNotificationChannel(new NotificationChannel(DATA_DELETE, DATA_DELETE, NotificationManager.IMPORTANCE_LOW));
         Notification notification = notificationCompat.build();
-        notificationManager.notify(NOTIFICATION_ID, notification);
+        if (total != 0 && show)
+            notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
     public void setIcon(int icon) {
