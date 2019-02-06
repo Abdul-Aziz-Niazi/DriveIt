@@ -177,7 +177,7 @@ public class DriveIt {
         }
     }
 
-    public void backupOrUpdateOne(File file, DICallBack<DIFile> diFileDICallBack) {
+    public void createOrUpdateOne(File file, DICallBack<DIFile> diFileDICallBack) {
         if (file.isDirectory()) {
             diFileDICallBack.failure("File is directory");
         }

@@ -47,8 +47,8 @@ class MainActivity : AppCompatActivity() {
             })
         }
         updateOne.setOnClickListener {
-            val file = File(Environment.getExternalStorageDirectory().absolutePath + "/Upload", "DATA.txt")
-            DriveIt.getInstance().backupOrUpdateOne(file, object : DICallBack<DIFile> {
+            val file = File(Environment.getExternalStorageDirectory().absolutePath + "/Upload", "DATA2.txt")
+            DriveIt.getInstance().createOrUpdateOne(file, object : DICallBack<DIFile> {
                 override fun success(DIObject: DIFile?) {
                     Log.d("MAIN", "Updated " + DIObject!!.name)
                 }
