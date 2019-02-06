@@ -264,7 +264,7 @@ public class DriveIt {
         } else {
             activity.startService(new Intent(activity, DIDeleteBackupService.class));
         }
-        DIDeleteBackupService.showNotification(showNotification);
+        DIDeleteBackupService.getInstance().showNotification(showNotification);
         DIDeleteBackupService.getInstance().deleteAll(activity, diFileDICallBack);
 
     }

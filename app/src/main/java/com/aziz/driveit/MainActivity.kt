@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
             DriveIt.getInstance().signOut()
         }
         delete.setOnClickListener {
-            DriveIt.getInstance().deleteBackup(this@MainActivity, object : DICallBack<DIFile> {
+            DriveIt.getInstance().deleteBackup(this@MainActivity,false, object : DICallBack<DIFile> {
                 override fun success(file: DIFile?) {
                     Log.d("MAIN", "DELETED file " + file)
 
