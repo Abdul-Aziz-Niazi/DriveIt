@@ -21,6 +21,9 @@ public class DIDeleteBackupService extends Service {
     private NotificationManager notificationManager;
     private static DIDeleteBackupService INSTANCE;
     private int total;
+    private int count;
+    private int errors;
+    private int icon;
 
     public static DIDeleteBackupService getInstance() {
         if (INSTANCE == null) {
@@ -40,22 +43,30 @@ public class DIDeleteBackupService extends Service {
         DIFileLister.list(new DICallBack<ArrayList<DIFile>>() {
             @Override
             public void success(ArrayList<DIFile> fileArrayList) {
+                total = fileArrayList.size();
+                count = 0;
                 for (DIFile file : fileArrayList) {
                     DIFileDeleter.deleteFile(file.getId(), new DICallBack<DIFile>() {
                         @Override
                         public void success(DIFile file) {
                             Log.d(TAG, "success: " + file.getId());
-                            total++;
-                            createNotification(context);
-                            DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
-                            diCallBack.success(file);
+                            count++;
+                            if (total == count) {
+                                createNotification(context);
+                                DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
+                                diCallBack.success(file);
+                            }
                         }
 
                         @Override
                         public void failure(String error) {
                             Log.d(TAG, "failure: " + error);
-                            total++;
-                            diCallBack.failure(error);
+                            count++;
+                            errors++;
+                            if (total == count) {
+                                diCallBack.success(null);
+                                createNotification(context);
+                            }
                         }
                     });
                 }
@@ -63,7 +74,8 @@ public class DIDeleteBackupService extends Service {
 
             @Override
             public void failure(String error) {
-                total++;
+                errors++;
+                count++;
                 Log.d(TAG, "failure: " + error);
                 diCallBack.failure(error);
             }
@@ -77,10 +89,14 @@ public class DIDeleteBackupService extends Service {
         notificationCompat = new NotificationCompat
                 .Builder(context, DATA_DELETE)
                 .setSound(null)
-                .setSmallIcon(R.drawable.ic_gdrive);
+                .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
 
         notificationCompat.setContentTitle("Backup removed");
-        notificationCompat.setContentText(total + " files");
+        if (errors != 0) {
+            notificationCompat.setContentText(total + " total files " + errors + " errors");
+        } else {
+            notificationCompat.setContentText(total + " total files");
+        }
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             notificationManager.createNotificationChannel(new NotificationChannel(DATA_DELETE, DATA_DELETE, NotificationManager.IMPORTANCE_LOW));
@@ -88,4 +104,7 @@ public class DIDeleteBackupService extends Service {
         notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
+    public void setIcon(int icon) {
+        this.icon = icon;
+    }
 }

@@ -38,6 +38,7 @@ class DIRestoreService extends Service {
     private int total;
     private NotificationManager notificationManager;
     private Context context;
+    private int icon;
 
     @Nullable
     @Override
@@ -54,7 +55,7 @@ class DIRestoreService extends Service {
                     .setContentTitle("Restore in Progress")
                     .setProgress(10, 0, true)
                     .setSound(null)
-                    .setSmallIcon(R.drawable.ic_gdrive)
+                    .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
                     .setContentText("initializing restore");
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -66,7 +67,7 @@ class DIRestoreService extends Service {
             notificationCompat = new NotificationCompat
                     .Builder(context, DATA_RESTORE)
                     .setSound(null)
-                    .setSmallIcon(R.drawable.ic_gdrive);
+                    .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
             if (count == 0) {
                 notificationCompat.setContentTitle("Backup not found");
                 notificationCompat.setContentText("Restore failed");
@@ -175,40 +176,6 @@ class DIRestoreService extends Service {
                 });
     }
 
-//    public void list(final DICallBack<ArrayList<DIFile>> callBack) {
-//        DINetworkHandler.getInstance().getWebService()
-//                .get(DIConstants.LIST_FILES + "?spaces=appDataFolder",
-//                        DINetworkHandler.getInstance().getHeaders())
-//                .enqueue(new Callback<ResponseBody>() {
-//                    @Override
-//                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//                        try {
-//                            if (response.isSuccessful()) {
-//                                ArrayList<DIFile> diFileArrayList = new ArrayList<>();
-//                                String success = response.body().string();
-//                                Log.d(TAG, "onResponse: " + success);
-//                                JSONObject responseObject = new JSONObject(success);
-//                                JSONArray data = responseObject.getJSONArray("files");
-//                                Type typeToken = new TypeToken<ArrayList<DIFile>>() {
-//                                }.getType();
-//                                diFileArrayList = DIUtils.getGson().fromJson(data.toString(), typeToken);
-//                                callBack.success(diFileArrayList);
-//                            } else {
-//                                String failure = response.errorBody().string();
-//                                callBack.failure("listing-error " + failure);
-//                            }
-//                        } catch (Exception e) {
-//                            callBack.failure("listing-exception " + e.getMessage());
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-//                        callBack.failure("listing-failure " + t.getMessage());
-//                    }
-//                });
-//    }
-
 
     private ArrayList<DIFile> filterOutFolders(ArrayList<DIFile> diFileArrayList) {
         ArrayList<DIFile> data = new ArrayList<>();
@@ -220,4 +187,7 @@ class DIRestoreService extends Service {
         return data;
     }
 
+    public void setIcon(int icon) {
+        this.icon = icon;
+    }
 }

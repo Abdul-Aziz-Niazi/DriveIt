@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         signIn.setOnClickListener {
-            DriveIt.getInstance().setIcon(this@MainActivity,R.drawable.speed)
+//            DriveIt.getInstance().setIcon(this@MainActivity,R.drawable.speed)
             DriveIt.getInstance().signIn(this@MainActivity, object : DICallBack<String> {
                 override fun success(DIObject: String?) {
 

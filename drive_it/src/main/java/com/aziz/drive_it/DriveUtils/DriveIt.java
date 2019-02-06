@@ -74,6 +74,9 @@ public class DriveIt {
         Log.d(TAG, "setIcon: " + context.getResources().getIdentifier(context.getResources().getResourceName(id), context.getResources().getResourceTypeName(id), context.getPackageName()));
 //        DIConstants.icon = BitmapFactory.decodeResource(context.getResources(), id);
         DIConstants.SMALL_ICON = id;
+        DIBackupService.getInstance().setIcon(id);
+        DIDeleteBackupService.getInstance().setIcon(id);
+        DIRestoreService.getInstance().setIcon(id);
     }
 
     public void signIn(Fragment host, DICallBack<String> signInCallBack) {
