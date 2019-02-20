@@ -31,7 +31,7 @@ public class DIAutoBackup extends Worker {
     private GoogleSignInClient client;
     private GoogleSignInAccount result;
     private Result workResult;
-    private ArrayList<File> fileArrayList = new ArrayList<>();
+    private ArrayList<DIFile> fileArrayList = new ArrayList<>();
 
     public DIAutoBackup(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -42,9 +42,14 @@ public class DIAutoBackup extends Worker {
     @Override
     public Result doWork() {
         String[] array = getInputData().getStringArray(DIConstants.DATA);
+        String[] desc = getInputData().getStringArray(DIConstants.DATA_DESC);
         if (array != null) {
-            for (String s : array) {
-                fileArrayList.add(new File(s));
+            for (int i = 0; i < array.length; i++) {
+                DIFile file = new DIFile();
+                file.setFile(new File(array[i]));
+                if (desc != null)
+                    file.setDescription(desc[i]);
+                fileArrayList.add(file);
             }
         }
         Log.d(TAG, "DIAutoBackup: " + fileArrayList);

@@ -2,6 +2,7 @@ package com.aziz.drive_it.DriveUtils.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,9 +15,12 @@ public class DIFile {
     private String name;
     @SerializedName("mimeType")
     private String mimeType;
+    @SerializedName("description")
+    private String description;
     private String modifiedTime;
     @SerializedName("parents")
     private List<String> parents = new ArrayList<>();
+    private File file;
 
     public DIFile(String id) {
         this.id = id;
@@ -24,6 +28,19 @@ public class DIFile {
 
     public DIFile() {
 
+    }
+
+    public void setFile(File file, String desc) {
+        this.file = file;
+        setName(file.getName());
+        setDescription(desc);
+        setMimeType("*/*"); //TODO set mime type
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+        setName(file.getName());
+        setMimeType("*/*"); //TODO set mime type
     }
 
     public Long getSize() {
@@ -83,6 +100,15 @@ public class DIFile {
         this.modifiedTime = modifiedTime;
     }
 
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public String toString() {
         return "\n\nid " + getId() + "\n"
@@ -92,4 +118,7 @@ public class DIFile {
                 + "mime " + getMimeType();
     }
 
+    public File getFile() {
+        return file;
+    }
 }

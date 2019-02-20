@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         signIn.setOnClickListener {
-//            DriveIt.getInstance().setIcon(this@MainActivity,R.drawable.speed)
+            //            DriveIt.getInstance().setIcon(this@MainActivity,R.drawable.speed)
             DriveIt.getInstance().signIn(this@MainActivity, object : DICallBack<String> {
                 override fun success(DIObject: String?) {
 
@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
             DriveIt.getInstance().signOut()
         }
         delete.setOnClickListener {
-            DriveIt.getInstance().deleteBackup(this@MainActivity,false, object : DICallBack<DIFile> {
+            DriveIt.getInstance().deleteBackup(this@MainActivity, false, object : DICallBack<DIFile> {
                 override fun success(file: DIFile?) {
                     Log.d("MAIN", "DELETED file " + file)
 
@@ -48,7 +48,9 @@ class MainActivity : AppCompatActivity() {
         }
         updateOne.setOnClickListener {
             val file = File(Environment.getExternalStorageDirectory().absolutePath + "/Upload", "DATA2.txt")
-            DriveIt.getInstance().createOrUpdateOne(file, object : DICallBack<DIFile> {
+            val diFile = DIFile()
+            diFile.file = file
+            DriveIt.getInstance().createOrUpdateOne(diFile, object : DICallBack<DIFile> {
                 override fun success(DIObject: DIFile?) {
                     Log.d("MAIN", "Updated " + DIObject!!.name)
                 }
@@ -92,11 +94,13 @@ class MainActivity : AppCompatActivity() {
 
         }
         backup.setOnClickListener {
-            val fileList = ArrayList<File>()
+            val fileList = ArrayList<DIFile>()
             val uploads = File(Environment.getExternalStorageDirectory().absolutePath + "/Upload")
             Log.d("MAIN", "FILE exists " + uploads.exists())
             for (file: File in uploads.listFiles()) {
-                fileList.add(file)
+                val diFile = DIFile()
+                diFile.setFile(file, "desc-${file.name}")
+                fileList.add(diFile)
             }
             DriveIt.getInstance().startBackup(this@MainActivity, fileList, object : DICallBack<DIFile> {
                 override fun success(file: DIFile?) {

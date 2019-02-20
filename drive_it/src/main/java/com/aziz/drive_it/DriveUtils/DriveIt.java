@@ -172,7 +172,7 @@ public class DriveIt {
         new AccountTask(context, signInCallBack).execute(getAccountTask.getResult().getEmail());
     }
 
-    public void startBackup(Activity activity, ArrayList<File> files, DICallBack<DIFile> listener) {
+    public void startBackup(Activity activity, ArrayList<DIFile> files, DICallBack<DIFile> listener) {
         if (EasyPermissions.hasPermissions(activity, permissions)) {
             initiateBackup(activity, files, listener);
         } else {
@@ -180,14 +180,14 @@ public class DriveIt {
         }
     }
 
-    public void createOrUpdateOne(File file, DICallBack<DIFile> diFileDICallBack) {
-        if (file.isDirectory()) {
+    public void createOrUpdateOne(DIFile file, DICallBack<DIFile> diFileDICallBack) {
+        if (file.getFile().isDirectory()) {
             diFileDICallBack.failure("File is directory");
         }
         DIFileUpdater.update(file, diFileDICallBack);
     }
 
-    private void initiateBackup(Activity activity, ArrayList<File> files, DICallBack<DIFile> listener) {
+    private void initiateBackup(Activity activity, ArrayList<DIFile> files, DICallBack<DIFile> listener) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             activity.startForegroundService(new Intent(activity, DIRestoreService.class));
         } else {

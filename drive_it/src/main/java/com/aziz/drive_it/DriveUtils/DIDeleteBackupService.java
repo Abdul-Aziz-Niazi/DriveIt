@@ -50,6 +50,7 @@ public class DIDeleteBackupService extends Service {
             public void success(ArrayList<DIFile> fileArrayList) {
                 total = fileArrayList.size();
                 count = 0;
+                errors = 0;
                 if (checkEmpty(context)) {
                     diCallBack.success(null);
                     return;

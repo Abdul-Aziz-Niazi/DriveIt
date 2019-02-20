@@ -52,7 +52,7 @@ class DIBackupService extends Service {
         return null;
     }
 
-    public void startBackup(Context context, ArrayList<File> fileArrayList, DICallBack<DIFile> fileDICallBack) {
+    public void startBackup(Context context, ArrayList<DIFile> fileArrayList, DICallBack<DIFile> fileDICallBack) {
         this.context = context;
         createNotification(context, 0);
         backup(fileArrayList, fileDICallBack);
@@ -62,11 +62,11 @@ class DIBackupService extends Service {
         this.icon = icon;
     }
 
-    private void backup(ArrayList<File> fileArrayList, final DICallBack<DIFile> fileDICallBack) {
+    private void backup(ArrayList<DIFile> fileArrayList, final DICallBack<DIFile> fileDICallBack) {
         total = fileArrayList.size();
         count = 0;
         Log.d(TAG, "backup: total files " + fileArrayList.size());
-        for (final File file : fileArrayList) {
+        for (final DIFile file : fileArrayList) {
             Log.d(TAG, "backup: " + file.getName());
             backupEach(file, new DICallBack<DIFile>() {
                 @Override
@@ -88,11 +88,9 @@ class DIBackupService extends Service {
         }
     }
 
-    private void backupEach(final File file, final DICallBack<DIFile> diCallBack) {
-        DIFile diFile = new DIFile();
-        diFile.setName("" + file.getName());
-        diFile.setParents(Collections.singletonList("appDataFolder"));
-        Call<DIFile> call = DINetworkHandler.getInstance().getWebService().post(DIConstants.LIST_FILES, DINetworkHandler.getHeaders(), diFile);
+    private void backupEach(final DIFile file, final DICallBack<DIFile> diCallBack) {
+        file.setParents(Collections.singletonList("appDataFolder"));
+        Call<DIFile> call = DINetworkHandler.getInstance().getWebService().post(DIConstants.LIST_FILES, DINetworkHandler.getHeaders(), file);
         call.enqueue(new Callback<DIFile>() {
             @Override
             public void onResponse(Call<DIFile> call, Response<DIFile> response) {
@@ -102,6 +100,7 @@ class DIBackupService extends Service {
                     handleFailure(response, diCallBack, file);
                 }
             }
+
             @Override
             public void onFailure(Call<DIFile> call, Throwable t) {
                 diCallBack.failure("Failed to upload " + t.getMessage());
@@ -110,7 +109,7 @@ class DIBackupService extends Service {
 
     }
 
-    private void handleFailure(Response<DIFile> response, DICallBack<DIFile> diCallBack, File file) {
+    private void handleFailure(Response<DIFile> response, DICallBack<DIFile> diCallBack, DIFile file) {
         diCallBack.failure("Failed to upload metadata" + file.getName());
         try {
             String errorBody = response.errorBody().string();
@@ -120,7 +119,7 @@ class DIBackupService extends Service {
         }
     }
 
-    private void handleSuccess(Response<DIFile> response, File file, DICallBack<DIFile> diCallBack) {
+    private void handleSuccess(Response<DIFile> response, DIFile file, DICallBack<DIFile> diCallBack) {
         DIFile responseFile = response.body();
         Log.d(TAG, "success: backup " + responseFile);
         DIFileUploader.uploadFile(responseFile, file, diCallBack);

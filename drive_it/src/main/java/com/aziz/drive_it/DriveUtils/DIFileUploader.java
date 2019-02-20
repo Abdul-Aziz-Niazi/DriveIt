@@ -15,8 +15,8 @@ class DIFileUploader {
 
     private static final String TAG = DIFileUploader.class.getSimpleName();
 
-    public static void uploadFile(DIFile diFile, File file, final DICallBack<DIFile> callBack) {
-        RequestBody body = RequestBody.create(MediaType.parse("*/*"), file);
+    public static void uploadFile(DIFile diFile, DIFile file, final DICallBack<DIFile> callBack) {
+        RequestBody body = RequestBody.create(MediaType.parse("*/*"), file.getFile());
         HashMap<String, String> headers = new HashMap<>(DINetworkHandler.getHeaders());
         Log.d(TAG, "uploadFile: headers " + headers);
         retrofit2.Call<DIFile> call = DINetworkHandler.getInstance().getWebService()

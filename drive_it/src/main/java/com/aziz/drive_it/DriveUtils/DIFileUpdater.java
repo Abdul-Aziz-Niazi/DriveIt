@@ -14,7 +14,7 @@ public class DIFileUpdater {
     private static final String TAG = DIFileUpdater.class.getSimpleName();
     private static boolean createNew = true;
 
-    public static void update(final File file, final DICallBack<DIFile> callBack) {
+    public static void update(final DIFile file, final DICallBack<DIFile> callBack) {
         DIFileLister.list(new DICallBack<ArrayList<DIFile>>() {
             @Override
             public void success(ArrayList<DIFile> fileArrayList) {
@@ -58,7 +58,7 @@ public class DIFileUpdater {
 
     }
 
-    private static void updateFile(File file, DIFile diFile, final DICallBack<DIFile> callBack) {
+    private static void updateFile(DIFile file, DIFile diFile, final DICallBack<DIFile> callBack) {
         DIFileUploader.uploadFile(diFile, file, new DICallBack<DIFile>() {
             @Override
             public void success(DIFile file) {

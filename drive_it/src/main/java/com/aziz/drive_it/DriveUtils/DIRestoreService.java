@@ -36,6 +36,7 @@ class DIRestoreService extends Service {
     private NotificationCompat.Builder notificationCompat;
     private int count;
     private int total;
+    private int errors;
     private NotificationManager notificationManager;
     private Context context;
     private int icon;
@@ -73,7 +74,11 @@ class DIRestoreService extends Service {
                 notificationCompat.setContentText("Restore failed");
             } else {
                 notificationCompat.setContentTitle("Restore Complete");
-                notificationCompat.setContentText(total + " files");
+                if (errors == 0)
+                    notificationCompat.setContentText(total + " files");
+                else
+                    notificationCompat.setContentText(total + " files " + errors + " errors");
+
             }
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -121,6 +126,7 @@ class DIRestoreService extends Service {
                 ArrayList<DIFile> fileArrayList = filterOutFolders(diFileArrayList);
                 total = fileArrayList.size();
                 count = 0;
+                errors = 0;
                 Log.d(TAG, "progress: 0 out of " + total);
                 if (total == 0) {
                     updateNotification(count);
@@ -140,6 +146,7 @@ class DIRestoreService extends Service {
                         @Override
                         public void failure(String error) {
                             count++;
+                            errors++;
                             callBack.failure(error);
                             updateNotification(count);
                             Log.d(TAG, "progress: " + count + " out of " + total + " " + error + " " + file.getKind());
@@ -152,6 +159,7 @@ class DIRestoreService extends Service {
             @Override
             public void failure(String error) {
                 count++;
+                errors++;
                 Log.d(TAG, "failure: " + error);
             }
         });

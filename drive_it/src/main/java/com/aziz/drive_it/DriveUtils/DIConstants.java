@@ -14,6 +14,7 @@ class DIConstants {
     public static final String BACKUP_SCHEDULE = "DI_BACKUP";
     public static final String DATA = "FILE_DATA";
     public static final String IC_NOTIFICATION = "ic_not";
+    public static final String DATA_DESC = "desc";
 
 
     public static int SMALL_ICON;
