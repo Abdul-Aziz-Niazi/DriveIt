@@ -113,11 +113,11 @@ class MainActivity : AppCompatActivity() {
             })
         }
         restore.setOnClickListener {
-            DriveIt.getInstance().startRestore(this@MainActivity, object : DICallBack<File> {
-                override fun success(file: File?) {
+            DriveIt.getInstance().startRestore(this@MainActivity, object : DICallBack<DIFile> {
+                override fun success(file: DIFile?) {
                     Log.d("MAIN", "DONE ${file!!.name}")
                     DriveIt.getInstance()
-                        .writeFile(file, Environment.getExternalStorageDirectory().absolutePath + "/demo/" + file.name)
+                        .writeFile(file.file, Environment.getExternalStorageDirectory().absolutePath + "/demo/" + file.name)
                 }
 
                 override fun failure(error: String?) {

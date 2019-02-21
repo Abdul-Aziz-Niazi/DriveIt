@@ -111,14 +111,14 @@ class DIRestoreService extends Service {
         return INSTANCE;
     }
 
-    public void startRestore(Context context, DICallBack<File> fileDICallBack) {
+    public void startRestore(Context context, DICallBack<DIFile> fileDICallBack) {
         this.context = context;
         createNotification(context, 0);
         restore(fileDICallBack);
     }
 
 
-    public void restore(final DICallBack<File> callBack) {
+    public void restore(final DICallBack<DIFile> callBack) {
         DIFileLister.list(new DICallBack<ArrayList<DIFile>>() {
             @Override
             public void success(ArrayList<DIFile> diFileArrayList) {
@@ -137,7 +137,8 @@ class DIRestoreService extends Service {
                         @Override
                         public void success(File data) {
                             count++;
-                            callBack.success(data);
+                            file.setFile(data);
+                            callBack.success(file);
                             updateNotification(count);
                             Log.d(TAG, "progress: " + count + " out of " + total + " " + data.getName() + " " + file.getKind());
 

@@ -47,8 +47,10 @@ public class DIAutoBackup extends Worker {
             for (int i = 0; i < array.length; i++) {
                 DIFile file = new DIFile();
                 file.setFile(new File(array[i]));
-                if (desc != null)
+                if (desc != null) {
                     file.setDescription(desc[i]);
+                    Log.d(TAG, "doWork: " + desc[i]);
+                }
                 fileArrayList.add(file);
             }
         }

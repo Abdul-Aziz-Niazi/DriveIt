@@ -16,6 +16,7 @@ import android.util.Log;
 import com.aziz.drive_it.DriveUtils.model.DIBackupDetails;
 import com.aziz.drive_it.DriveUtils.model.DIFile;
 import com.aziz.drive_it.R;
+import com.google.android.gms.drive.Drive;
 import org.greenrobot.eventbus.EventBus;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -154,22 +155,7 @@ class DIBackupService extends Service {
                 notificationCompat.setContentTitle("Backup Failed");
                 notificationCompat.setContentText("Files not found");
             } else {
-                notificationCompat.setContentTitle("Backup Complete");
-                notificationCompat.setContentText(total + " files");
-                DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
-                DIBackupDetailsRepository.getINSTANCE().getBackupDetails(new DICallBack<DIBackupDetails>() {
-                    @Override
-                    public void success(DIBackupDetails details) {
-                        EventBus.getDefault().post(details);
-                    }
-
-                    @Override
-                    public void failure(String error) {
-                        DIBackupDetails errorDetails = new DIBackupDetails();
-                        errorDetails.setError(error);
-                        EventBus.getDefault().post(errorDetails);
-                    }
-                });
+                onBackupComplete();
             }
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -178,6 +164,25 @@ class DIBackupService extends Service {
             notificationManager.notify(NOTIFICATION_ID, notification);
         }
 
+    }
+
+    private void onBackupComplete() {
+        notificationCompat.setContentTitle("Backup Complete");
+        notificationCompat.setContentText(total + " files");
+        DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
+        DIBackupDetailsRepository.getINSTANCE().getBackupDetails(new DICallBack<DIBackupDetails>() {
+            @Override
+            public void success(DIBackupDetails details) {
+                DriveIt.autoBackupComplete(details);
+            }
+
+            @Override
+            public void failure(String error) {
+                DIBackupDetails errorDetails = new DIBackupDetails();
+                errorDetails.setError(error);
+                DriveIt.autoBackupFailed(errorDetails);
+            }
+        });
     }
 
     private void updateNotification(int count) {

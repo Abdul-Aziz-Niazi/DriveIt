@@ -14,12 +14,12 @@ import retrofit2.Response;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-public class DIFileLister {
+class DIFileLister {
     private static final String TAG = DIFileLister.class.getSimpleName();
 
-    public static void list(final DICallBack<ArrayList<DIFile>> callBack) {
+    static void list(final DICallBack<ArrayList<DIFile>> callBack) {
         DINetworkHandler.getInstance().getWebService()
-                .get(DIConstants.LIST_FILES + "?spaces=appDataFolder",
+                .get(DIConstants.LIST_FILES + "?spaces=appDataFolder&fields=files(id,name,modifiedTime,size,description,mimeType)",
                         DINetworkHandler.getHeaders())
                 .enqueue(new Callback<ResponseBody>() {
                     @Override

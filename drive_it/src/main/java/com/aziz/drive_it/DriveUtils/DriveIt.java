@@ -45,13 +45,11 @@ public class DriveIt {
     private static DriveIt INSTANCE;
     private GoogleSignInClient signInClient;
     private DICallBack<String> signInCallBack;
-    private ArrayList<File> fileArrayList = new ArrayList<>();
     private Context context;
     private String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-    private DICallBack<DIBackupDetails> autoBackupCallback;
+    private static DICallBack<DIBackupDetails> autoBackupCallback;
 
     private DriveIt() {
-        EventBus.getDefault().register(this);
     }
 
     synchronized public static DriveIt getInstance() {
@@ -196,7 +194,7 @@ public class DriveIt {
         DIBackupService.getInstance().startBackup(activity, files, listener);
     }
 
-    public void startRestore(Activity activity, DICallBack<File> listener) {
+    public void startRestore(Activity activity, DICallBack<DIFile> listener) {
         if (EasyPermissions.hasPermissions(activity, permissions)) {
             initiateRestore(activity, listener);
         } else {
@@ -204,7 +202,7 @@ public class DriveIt {
         }
     }
 
-    private void initiateRestore(Activity activity, DICallBack<File> listener) {
+    private void initiateRestore(Activity activity, DICallBack<DIFile> listener) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             activity.startForegroundService(new Intent(activity, DIRestoreService.class));
         } else {
@@ -214,7 +212,11 @@ public class DriveIt {
     }
 
     public void setAutoBackup(Frequency frequency, String[] filePaths, DICallBack<DIBackupDetails> autoBackupCallback) {
-        this.autoBackupCallback = autoBackupCallback;
+        setAutoBackup(frequency, filePaths, null, autoBackupCallback);
+    }
+
+    public void setAutoBackup(Frequency frequency, String[] filePaths, String[] desc, DICallBack<DIBackupDetails> autoBackupCallback) {
+        DriveIt.autoBackupCallback = autoBackupCallback;
         Log.d(TAG, "setAutoBackup: Schedule for " + frequency.getFrequency() + " days");
 
         PeriodicWorkRequest.Builder workRequest = new PeriodicWorkRequest.Builder(DIAutoBackup.class, frequency.getFrequency(),
@@ -227,8 +229,9 @@ public class DriveIt {
                 .setRequiresStorageNotLow(false)
                 .build();
         Data.Builder inputData = new Data.Builder();
-        Type type = new TypeToken<ArrayList<File>>() {
-        }.getType();
+        if (desc != null)
+            inputData.putStringArray(DIConstants.DATA_DESC, desc);
+
         inputData.putStringArray(DIConstants.DATA, filePaths);
         if (DIConstants.SMALL_ICON != 0) {
             inputData.putInt(DIConstants.IC_NOTIFICATION, DIConstants.SMALL_ICON);
@@ -291,18 +294,22 @@ public class DriveIt {
         }
     }
 
-    @Subscribe
-    public void autoBackupSuccessful(DIBackupDetails backupDetails) {
-        Log.d(TAG, "autoBackupSuccessful: " + backupDetails.getError());
-        if (backupDetails.getError() == null)
+//    @Subscribe
+//    public void autoBackupSuccessful(DIBackupDetails backupDetails) {
+//        Log.d(TAG, "autoBackupSuccessful: " + backupDetails.getError());
+//        if (backupDetails.getError() == null)
+//            autoBackupCallback.success(backupDetails);
+//        else
+//            autoBackupCallback.failure(backupDetails.getError());
+//    }
+
+    static void autoBackupComplete(DIBackupDetails backupDetails) {
+        if (autoBackupCallback != null)
             autoBackupCallback.success(backupDetails);
-        else
-            autoBackupCallback.failure(backupDetails.getError());
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        EventBus.getDefault().unregister(this);
+    static void autoBackupFailed(DIBackupDetails backupDetails) {
+        if (autoBackupCallback != null)
+            autoBackupCallback.failure(backupDetails.getError());
     }
 }
