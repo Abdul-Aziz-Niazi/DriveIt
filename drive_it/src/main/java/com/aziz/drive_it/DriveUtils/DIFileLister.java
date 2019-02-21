@@ -14,10 +14,10 @@ import retrofit2.Response;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-class DIFileLister {
+public class DIFileLister {
     private static final String TAG = DIFileLister.class.getSimpleName();
 
-    static void list(final DICallBack<ArrayList<DIFile>> callBack) {
+    public static void list(final DICallBack<ArrayList<DIFile>> callBack) {
         DINetworkHandler.getInstance().getWebService()
                 .get(DIConstants.LIST_FILES + "?spaces=appDataFolder&fields=files(id,name,modifiedTime,size,description,mimeType)",
                         DINetworkHandler.getHeaders())
