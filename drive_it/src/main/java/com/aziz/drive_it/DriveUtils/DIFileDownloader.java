@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-class DIFileDownloader {
+public class DIFileDownloader {
 
     private static final String TAG = DIFileDownloader.class.getSimpleName();
 
@@ -47,6 +47,7 @@ class DIFileDownloader {
             }
         });
     }
+
     private static File writeFileToPath(byte[] bytes, String path, String name) throws IOException {
 
         File dir = new File(path);

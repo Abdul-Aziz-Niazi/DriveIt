@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.os.Environment;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -48,6 +49,7 @@ public class DriveIt {
     private Context context;
     private String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private static DICallBack<DIBackupDetails> autoBackupCallback;
+    private DIFile found = null;
 
     private DriveIt() {
     }
@@ -270,6 +272,44 @@ public class DriveIt {
         DIDeleteBackupService.getInstance().showNotification(showNotification);
         DIDeleteBackupService.getInstance().deleteAll(activity, diFileDICallBack);
 
+    }
+
+    public void downloadOne(final String query, final DICallBack<DIFile> callBack) {
+        DIFileLister.list(new DICallBack<ArrayList<DIFile>>() {
+            @Override
+            public void success(ArrayList<DIFile> files) {
+                found = null;
+                for (DIFile diFile : files) {
+                    if (diFile.getName().toLowerCase().contains(query.toLowerCase())) {
+                        found = diFile;
+                        break;
+                    }
+                }
+                if (found == null) {
+                    callBack.failure("File not found");
+                    return;
+                }
+                DIFileDownloader.downloadFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/.driveIt/", found, new DICallBack<File>() {
+                    @Override
+                    public void success(File file) {
+                        found.setFile(file);
+                        callBack.success(found);
+                    }
+
+                    @Override
+                    public void failure(String error) {
+                        callBack.failure("" + error);
+                    }
+                });
+
+
+            }
+
+            @Override
+            public void failure(String error) {
+                callBack.failure("" + error);
+            }
+        });
     }
 
     public void writeFile(File sourceFile, String destFile) throws IOException {
