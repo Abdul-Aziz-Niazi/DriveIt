@@ -19,7 +19,7 @@ public class DIFileLister {
 
     public static void list(final DICallBack<ArrayList<DIFile>> callBack) {
         DINetworkHandler.getInstance().getWebService()
-                .get(DIConstants.LIST_FILES + "?spaces=appDataFolder&fields=files(id,name,modifiedTime,size,description,mimeType)",
+                .get(DIConstants.LIST_FILES + "?spaces=appDataFolder&fields=files(id,name,modifiedTime,size,description,mimeType)&OrderBy=timeModified asc",
                         DINetworkHandler.getHeaders())
                 .enqueue(new Callback<ResponseBody>() {
                     @Override

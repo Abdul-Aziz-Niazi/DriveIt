@@ -12,8 +12,11 @@ import com.aziz.drive_it.DriveUtils.model.DIBackupDetails
 import com.aziz.drive_it.DriveUtils.model.Frequency
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
+    private val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,7 +87,7 @@ class MainActivity : AppCompatActivity() {
             backup_size.setText("updating")
             DriveIt.getInstance().getBackupSize(object : DICallBack<DIBackupDetails> {
                 override fun success(details: DIBackupDetails?) {
-                    backup_size.setText("size " + details!!.backupSize + " time " + details!!.lastBackup)
+                    backup_size.setText("size " + details!!.backupSize + " time " + format.format(Date(details!!.lastBackup)))
                 }
 
                 override fun failure(error: String?) {
