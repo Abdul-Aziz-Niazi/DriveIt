@@ -68,6 +68,8 @@ public class DIBackupDetailsRepository {
             @Override
             public void failure(String error) {
                 callBack.failure(error);
+                Log.d(TAG, "failure: "+error);
+                backupDetails = new DIBackupDetails();
                 backupDetails.setError(error);
             }
         });
