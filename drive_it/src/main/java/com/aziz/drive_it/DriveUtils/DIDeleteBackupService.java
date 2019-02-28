@@ -44,7 +44,7 @@ public class DIDeleteBackupService extends Service {
     }
 
     public void deleteAll(final Context context, final DICallBack<DIFile> diCallBack) {
-
+        createNotification(context, 0);
         DIFileLister.list(new DICallBack<ArrayList<DIFile>>() {
             @Override
             public void success(ArrayList<DIFile> fileArrayList) {
@@ -62,7 +62,7 @@ public class DIDeleteBackupService extends Service {
                             Log.d(TAG, "success: " + file.getId());
                             count++;
                             if (total == count) {
-                                createNotification(context);
+                                createNotification(context, 1);
                                 DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
                                 diCallBack.success(file);
                             }
@@ -75,7 +75,7 @@ public class DIDeleteBackupService extends Service {
                             errors++;
                             if (total == count) {
                                 diCallBack.success(null);
-                                createNotification(context);
+                                createNotification(context, 1);
                             }
                         }
                     });
@@ -94,34 +94,53 @@ public class DIDeleteBackupService extends Service {
 
     private boolean checkEmpty(Context context) {
         if (total == 0) {
-            createNotification(context);
+            createNotification(context, 1);
             return true;
         }
         return false;
     }
 
 
-    void createNotification(Context context) {
-        Log.d(TAG, "createNotification: creating notification ");
+    void createNotification(Context context, int type) {
+        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        Log.d(TAG, "createNotification: creating notification " + type);
+        if (type == 1) {
+            notificationManager.cancel(NOTIFICATION_ID);
+            notificationCompat = new NotificationCompat
+                    .Builder(context, DATA_DELETE)
+                    .setSound(null)
+                    .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
 
-        notificationCompat = new NotificationCompat
-                .Builder(context, DATA_DELETE)
-                .setSound(null)
-                .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
+            notificationCompat.setContentTitle("Backup removed");
+            if (errors != 0) {
+                notificationCompat.setContentText(total + " total files " + errors + " errors");
+            } else {
+                notificationCompat.setContentText(total + " total files");
+            }
 
-        notificationCompat.setContentTitle("Backup removed");
-        if (errors != 0) {
-            notificationCompat.setContentText(total + " total files " + errors + " errors");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                notificationManager.createNotificationChannel(new NotificationChannel(DATA_DELETE, DATA_DELETE, NotificationManager.IMPORTANCE_LOW));
+            Notification notification = notificationCompat.build();
+            if (total != 0 && show)
+                notificationManager.notify(NOTIFICATION_ID, notification);
         } else {
-            notificationCompat.setContentText(total + " total files");
+            Log.d(TAG, "createNotification: DELETE_NO");
+            notificationManager.cancel(NOTIFICATION_ID);
+            notificationCompat = new NotificationCompat
+                    .Builder(context, DATA_DELETE)
+                    .setSound(null)
+                    .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
+
+            notificationCompat.setContentText("In Progress");
+            notificationCompat.setProgress(100, 0, true);
+            notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                notificationManager.createNotificationChannel(new NotificationChannel(DATA_DELETE, DATA_DELETE, NotificationManager.IMPORTANCE_LOW));
+            Notification notification = notificationCompat.build();
+            if (show)
+                notificationManager.notify(NOTIFICATION_ID, notification);
         }
 
-        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            notificationManager.createNotificationChannel(new NotificationChannel(DATA_DELETE, DATA_DELETE, NotificationManager.IMPORTANCE_LOW));
-        Notification notification = notificationCompat.build();
-        if (total != 0 && show)
-            notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
     public void setIcon(int icon) {

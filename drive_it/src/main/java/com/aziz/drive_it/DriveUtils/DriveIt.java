@@ -172,7 +172,9 @@ public class DriveIt {
         new AccountTask(context, signInCallBack).execute(getAccountTask.getResult().getEmail());
     }
 
-    public void startBackup(Activity activity, ArrayList<DIFile> files, DICallBack<DIFile> listener) {
+    public void startBackup(Context activity, ArrayList<DIFile> files, DICallBack<DIFile> listener) {
+        if (activity == null)
+            return;
         if (EasyPermissions.hasPermissions(activity, permissions)) {
             initiateBackup(activity, files, listener);
         } else {
@@ -187,7 +189,7 @@ public class DriveIt {
         DIFileUpdater.update(file, diFileDICallBack);
     }
 
-    private void initiateBackup(Activity activity, ArrayList<DIFile> files, DICallBack<DIFile> listener) {
+    private void initiateBackup(Context activity, ArrayList<DIFile> files, DICallBack<DIFile> listener) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             activity.startForegroundService(new Intent(activity, DIRestoreService.class));
         } else {
@@ -196,7 +198,9 @@ public class DriveIt {
         DIBackupService.getInstance().startBackup(activity, files, listener);
     }
 
-    public void startRestore(Activity activity, DICallBack<DIFile> listener) {
+    public void startRestore(Context activity, DICallBack<DIFile> listener) {
+        if (activity == null)
+            return;
         if (EasyPermissions.hasPermissions(activity, permissions)) {
             initiateRestore(activity, listener);
         } else {
@@ -204,7 +208,7 @@ public class DriveIt {
         }
     }
 
-    private void initiateRestore(Activity activity, DICallBack<DIFile> listener) {
+    private void initiateRestore(Context activity, DICallBack<DIFile> listener) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             activity.startForegroundService(new Intent(activity, DIRestoreService.class));
         } else {
