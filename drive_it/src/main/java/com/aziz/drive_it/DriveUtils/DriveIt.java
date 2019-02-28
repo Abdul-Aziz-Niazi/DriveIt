@@ -267,7 +267,9 @@ public class DriveIt {
         });
     }
 
-    public void deleteBackup(Activity activity, boolean showNotification, DICallBack<DIFile> diFileDICallBack) {
+    public void deleteBackup(Context activity, boolean showNotification, DICallBack<DIFile> diFileDICallBack) {
+        if (context == null)
+            return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             activity.startService(new Intent(activity, DIDeleteBackupService.class));
         } else {

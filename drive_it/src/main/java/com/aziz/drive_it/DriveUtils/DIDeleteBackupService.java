@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class DIDeleteBackupService extends Service {
     private static final String TAG = DIDeleteBackupService.class.getSimpleName();
-    private static final int NOTIFICATION_ID = 119;
+    private static final int NOTIFICATION_ID = 908;
     private static final String DATA_DELETE = "DATA_DELETE";
     private boolean show;
     private NotificationCompat.Builder notificationCompat;
@@ -137,8 +137,7 @@ public class DIDeleteBackupService extends Service {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 notificationManager.createNotificationChannel(new NotificationChannel(DATA_DELETE, DATA_DELETE, NotificationManager.IMPORTANCE_LOW));
             Notification notification = notificationCompat.build();
-            if (show)
-                notificationManager.notify(NOTIFICATION_ID, notification);
+            notificationManager.notify(NOTIFICATION_ID, notification);
         }
 
     }
