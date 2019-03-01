@@ -44,6 +44,10 @@ public class DIBackupDetailsRepository {
 
 
     public void getBackupDetails(final DICallBack<DIBackupDetails> callBack) {
+        if (backupDetails != null && backupDetails.getError() == null && !backupChanged) {
+            callBack.success(backupDetails);
+            return;
+        }
         DIFileLister.list(new DICallBack<ArrayList<DIFile>>() {
             @Override
             public void success(ArrayList<DIFile> fileArrayList) {
@@ -62,13 +66,14 @@ public class DIBackupDetailsRepository {
                 diBackupDetails.setBackupSize(size);
                 diBackupDetails.setLastBackup(timestamp);
                 backupDetails = diBackupDetails;
+                backupChanged = false;
                 callBack.success(diBackupDetails);
             }
 
             @Override
             public void failure(String error) {
                 callBack.failure(error);
-                Log.d(TAG, "failure: "+error);
+                Log.d(TAG, "failure: " + error);
                 backupDetails = new DIBackupDetails();
                 backupDetails.setError(error);
             }
