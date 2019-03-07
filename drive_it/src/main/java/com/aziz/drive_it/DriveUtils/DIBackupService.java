@@ -63,30 +63,42 @@ class DIBackupService extends Service {
         this.icon = icon;
     }
 
-    private void backup(ArrayList<DIFile> fileArrayList, final DICallBack<DIFile> fileDICallBack) {
+    private void backup(final ArrayList<DIFile> fileArrayList, final DICallBack<DIFile> fileDICallBack) {
         total = fileArrayList.size();
         count = 0;
         Log.d(TAG, "backup: total files " + fileArrayList.size());
-        for (final DIFile file : fileArrayList) {
-            Log.d(TAG, "backup: " + file.getName());
-            backupEach(file, new DICallBack<DIFile>() {
-                @Override
-                public void success(DIFile diFile) {
-                    count++;
-                    updateNotification(count);
-                    Log.d(TAG, "success: progress " + count + " out of " + total + " " + file.getName());
-                    fileDICallBack.success(diFile);
-                }
+        final DIFile dDFile = fileArrayList.get(count);
+        Log.d(TAG, "backup: " + dDFile.getName());
+        DICallBack<DIFile> diCallBack = new DICallBack<DIFile>() {
+            @Override
+            public void success(DIFile diFile) {
+                count++;
+                updateNotification(count);
 
-                @Override
-                public void failure(String error) {
-                    count++;
-                    updateNotification(count);
-                    Log.d(TAG, "failure: progress " + count + " out of " + total + " " + file.getName() + " " + error);
-                    fileDICallBack.failure(error);
+                Log.d(TAG, "success: progress " + count + " out of " + total + " " + diFile.getName());
+                fileDICallBack.success(diFile);
+                if (fileArrayList.size() != count) {
+                    Log.d(TAG, "success: continue " + count);
+                    backupEach(fileArrayList.get(count), this);
                 }
-            });
-        }
+            }
+
+            @Override
+            public void failure(String error) {
+                count++;
+                updateNotification(count);
+                Log.d(TAG, "failure: progress " + count + " out of " + total + " " + dDFile.getName() + " " + error);
+                fileDICallBack.failure(error);
+                if (fileArrayList.size() != count) {
+                    Log.d(TAG, "success: continue " + count);
+                    backupEach(fileArrayList.get(count), this);
+                }
+            }
+        };
+
+        backupEach(dDFile, diCallBack);
+
+
     }
 
     private void backupEach(final DIFile file, final DICallBack<DIFile> diCallBack) {
