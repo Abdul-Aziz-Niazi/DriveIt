@@ -131,7 +131,7 @@ public class DIDeleteBackupService extends Service {
                     .setSound(null)
                     .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
 
-            notificationCompat.setContentText("In Progress");
+            notificationCompat.setContentText("Processing backup");
             notificationCompat.setProgress(100, 0, true);
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)

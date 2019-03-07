@@ -132,11 +132,11 @@ class DIBackupService extends Service {
         if (type == 0) {
             notificationCompat = new NotificationCompat
                     .Builder(context, DATA_BACKUP)
-                    .setContentTitle("Backup in Progress")
+                    .setContentTitle("")
                     .setProgress(10, 0, true)
                     .setSound(null)
                     .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
-                    .setContentText("initializing backup");
+                    .setContentText("Processing backup");
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (notificationManager.getNotificationChannel(DATA_BACKUP) != null)
