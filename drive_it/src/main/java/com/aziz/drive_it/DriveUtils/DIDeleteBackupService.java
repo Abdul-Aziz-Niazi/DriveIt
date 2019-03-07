@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import com.aziz.drive_it.DriveUtils.model.DIBackupDetails;
 import com.aziz.drive_it.DriveUtils.model.DIFile;
 import com.aziz.drive_it.R;
 
@@ -41,6 +42,49 @@ public class DIDeleteBackupService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    public void deleteBackup(final Context context, final DICallBack<String> diCallBack) {
+        createNotification(context, 0);
+        DIFileLister.list(new DICallBack<ArrayList<DIFile>>() {
+            @Override
+            public void success(ArrayList<DIFile> fileArrayList) {
+                total = fileArrayList.size();
+                count = 0;
+                errors = 0;
+                if (checkEmpty(context)) {
+                    diCallBack.success(null);
+                    return;
+                }
+                if (fileArrayList.get(0).getParents() == null) {
+                    diCallBack.failure("Failed to delete Backup");
+                    return;
+                }
+                Log.d(TAG, "file parents: " + fileArrayList.get(0).getParents().size());
+                DIFileDeleter.deleteFile(fileArrayList.get(0).getParents().get(0), new DICallBack<DIFile>() {
+                    @Override
+                    public void success(DIFile file) {
+                        Log.d(TAG, "success: " + file.getId());
+                        createNotification(context, 1);
+                        DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
+                        diCallBack.success("Deleted Backup Successfully");
+                    }
+
+                    @Override
+                    public void failure(String error) {
+                        Log.d(TAG, "failure: " + error);
+                        diCallBack.success(null);
+                        createNotification(context, 1);
+                    }
+                });
+            }
+
+            @Override
+            public void failure(String error) {
+                Log.d(TAG, "failure: " + error);
+                diCallBack.failure(error);
+            }
+        });
     }
 
     public void deleteAll(final Context context, final DICallBack<DIFile> diCallBack) {
