@@ -1,9 +1,12 @@
 package com.aziz.drive_it.DriveUtils;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import com.aziz.drive_it.DriveUtils.model.DIBackupDetails;
 import com.aziz.drive_it.DriveUtils.model.DIFile;
 import com.aziz.drive_it.DriveUtils.utils.DIUtils;
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.ResponseBody;
 import org.json.JSONArray;
@@ -31,6 +34,7 @@ public class DIBackupDetailsRepository {
     private Long totalSize = 0L;
     private ArrayList<Date> time = new ArrayList<>();
     private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH);
+    private SharedPreferences preferences;
 
     public static DIBackupDetailsRepository getINSTANCE() {
         if (INSTANCE == null)
@@ -43,11 +47,20 @@ public class DIBackupDetailsRepository {
     }
 
 
-    public void getBackupDetails(final DICallBack<DIBackupDetails> callBack) {
+    public void getBackupDetails(Context context, final DICallBack<DIBackupDetails> callBack) {
+        preferences = context.getSharedPreferences(DIConstants.PREF_KEY, Context.MODE_PRIVATE);
+        //Check Local Backup Details
         if (backupDetails != null && backupDetails.getError() == null && !backupChanged) {
             callBack.success(backupDetails);
             return;
         }
+
+        //Check Prefs for Backup Details
+        if (!preferences.getString(DIConstants.PREF_DETAILS, "").equalsIgnoreCase("")) {
+            callBack.success(new Gson().fromJson(preferences.getString(DIConstants.PREF_DETAILS, "{}"), DIBackupDetails.class));
+        }
+
+        //Check the internet
         DIFileLister.list(new DICallBack<ArrayList<DIFile>>() {
             @Override
             public void success(ArrayList<DIFile> fileArrayList) {
@@ -65,7 +78,10 @@ public class DIBackupDetailsRepository {
                 DIBackupDetails diBackupDetails = new DIBackupDetails();
                 diBackupDetails.setBackupSize(size);
                 diBackupDetails.setLastBackup(timestamp);
+                //local
                 backupDetails = diBackupDetails;
+                //prefs
+                preferences.edit().putString(DIConstants.PREF_DETAILS, new Gson().toJson(backupDetails)).apply();
                 backupChanged = false;
                 callBack.success(diBackupDetails);
             }

@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
 
         details.setOnClickListener {
             backup_size.setText("updating")
-            DriveIt.getInstance().getBackupSize(object : DICallBack<DIBackupDetails> {
+            DriveIt.getInstance().getBackupSize(applicationContext, object : DICallBack<DIBackupDetails> {
                 override fun success(details: DIBackupDetails?) {
                     backup_size.setText("size " + details!!.backupSize + " time " + format.format(Date(details!!.lastBackup)))
                 }
@@ -120,7 +120,10 @@ class MainActivity : AppCompatActivity() {
                 override fun success(file: DIFile?) {
                     Log.d("MAIN", "DONE ${file!!.name}")
                     DriveIt.getInstance()
-                        .writeFile(file.file, Environment.getExternalStorageDirectory().absolutePath + "/demo/" + file.name)
+                        .writeFile(
+                            file.file,
+                            Environment.getExternalStorageDirectory().absolutePath + "/demo/" + file.name
+                        )
                 }
 
                 override fun failure(error: String?) {

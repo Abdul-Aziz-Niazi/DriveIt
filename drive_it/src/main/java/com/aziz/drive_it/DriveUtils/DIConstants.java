@@ -15,6 +15,8 @@ class DIConstants {
     public static final String DATA = "FILE_DATA";
     public static final String IC_NOTIFICATION = "ic_not";
     public static final String DATA_DESC = "desc";
+    public static final String PREF_KEY = "DRIVE_IT";
+    public static final String PREF_DETAILS = "DI_DETAILS";
 
 
     public static int SMALL_ICON;

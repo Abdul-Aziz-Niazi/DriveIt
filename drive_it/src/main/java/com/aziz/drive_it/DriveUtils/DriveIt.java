@@ -251,8 +251,8 @@ public class DriveIt {
         WorkManager.getInstance().cancelAllWorkByTag(DIConstants.BACKUP_SCHEDULE);
     }
 
-    public void getBackupSize(final DICallBack<DIBackupDetails> diCallBack) {
-        DIBackupDetailsRepository.getINSTANCE().getBackupDetails(new DICallBack<DIBackupDetails>() {
+    public void getBackupSize(Context context, final DICallBack<DIBackupDetails> diCallBack) {
+        DIBackupDetailsRepository.getINSTANCE().getBackupDetails(context,new DICallBack<DIBackupDetails>() {
             @Override
             public void success(DIBackupDetails details) {
                 Log.d(TAG, "success: size:" + details.getBackupSize() + " time:" + details.getLastBackup());
