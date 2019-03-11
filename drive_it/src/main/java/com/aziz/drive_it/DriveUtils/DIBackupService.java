@@ -147,6 +147,7 @@ class DIBackupService extends Service {
                     .setContentTitle("")
                     .setProgress(10, 0, true)
                     .setSound(null)
+                    .setOngoing(true)
                     .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
                     .setContentText("Processing backup");
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -169,6 +170,7 @@ class DIBackupService extends Service {
             } else {
                 onBackupComplete();
             }
+            notificationCompat.setOngoing(false);
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 notificationManager.createNotificationChannel(new NotificationChannel(DATA_BACKUP, DATA_BACKUP, NotificationManager.IMPORTANCE_LOW));
@@ -199,7 +201,7 @@ class DIBackupService extends Service {
 
     private void updateNotification(int count) {
         notificationCompat.setProgress(total, count, false);
-        notificationCompat.setContentText(count + "/" + total);
+        notificationCompat.setContentText(Math.round((float) count * 100) / total + "%");
         notificationCompat.setSound(null);
         notificationManager.notify(NOTIFICATION_ID, notificationCompat.build());
         if (count == total) {
