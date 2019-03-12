@@ -252,7 +252,7 @@ public class DriveIt {
     }
 
     public void getBackupSize(Context context, final DICallBack<DIBackupDetails> diCallBack) {
-        DIBackupDetailsRepository.getINSTANCE().getBackupDetails(context,new DICallBack<DIBackupDetails>() {
+        DIBackupDetailsRepository.getINSTANCE().getBackupDetails(context, new DICallBack<DIBackupDetails>() {
             @Override
             public void success(DIBackupDetails details) {
                 Log.d(TAG, "success: size:" + details.getBackupSize() + " time:" + details.getLastBackup());
@@ -335,6 +335,8 @@ public class DriveIt {
             FileChannel destination = new FileOutputStream(destFile).getChannel();
             destination.transferFrom(source, 0, source.size());
             sourceFile.delete();
+            source.close();
+            destination.close();
         } catch (Exception e) {
 
         }

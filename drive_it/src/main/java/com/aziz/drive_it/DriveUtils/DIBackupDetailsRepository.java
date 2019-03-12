@@ -58,6 +58,7 @@ public class DIBackupDetailsRepository {
         //Check Prefs for Backup Details
         if (!preferences.getString(DIConstants.PREF_DETAILS, "").equalsIgnoreCase("")) {
             callBack.success(new Gson().fromJson(preferences.getString(DIConstants.PREF_DETAILS, "{}"), DIBackupDetails.class));
+            return;
         }
 
         //Check the internet

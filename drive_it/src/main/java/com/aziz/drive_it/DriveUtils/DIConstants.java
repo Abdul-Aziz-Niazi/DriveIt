@@ -7,6 +7,7 @@ class DIConstants {
     public static final String BASE_URL = "https://www.googleapis.com/";
     public static final String LIST_FILES = "drive/v3/files/";
     public static final String UPLD_FILES = "upload/drive/v3/files/";
+    public static final String UPLD_FILES_RESUMABLE = "/upload/drive/v3/files?uploadType=resumable";
     public static final int REQUEST_BACKUP = 199;
     public static final String ClIENT_ID = "675685919040-1gs6ho8ifkfclk1jhskv218i0pddjd8p.apps.googleusercontent.com";
     public static final String AUTH = "auth/drive.appdata";
@@ -17,6 +18,8 @@ class DIConstants {
     public static final String DATA_DESC = "desc";
     public static final String PREF_KEY = "DRIVE_IT";
     public static final String PREF_DETAILS = "DI_DETAILS";
+    public static final String UPLD_POS = "session_uri";
+    public static final String CHNK_START = "chunk_start_byte";
 
 
     public static int SMALL_ICON;

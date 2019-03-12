@@ -56,7 +56,8 @@ class DIBackupService extends Service {
     public void startBackup(Context context, ArrayList<DIFile> fileArrayList, DICallBack<DIFile> fileDICallBack) {
         this.context = context;
         createNotification(context, 0);
-        backup(fileArrayList, fileDICallBack);
+        new DIResumeableUpload(context, fileArrayList, fileDICallBack);
+//        backup(fileArrayList, fileDICallBack);
     }
 
     public void setIcon(@DrawableRes int icon) {
@@ -184,7 +185,7 @@ class DIBackupService extends Service {
         notificationCompat.setContentTitle("Backup Complete");
         notificationCompat.setContentText(total + " files");
         DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
-        DIBackupDetailsRepository.getINSTANCE().getBackupDetails(context,new DICallBack<DIBackupDetails>() {
+        DIBackupDetailsRepository.getINSTANCE().getBackupDetails(context, new DICallBack<DIBackupDetails>() {
             @Override
             public void success(DIBackupDetails details) {
                 DriveIt.autoBackupComplete(details);
@@ -215,5 +216,6 @@ class DIBackupService extends Service {
     private void removeNotification() {
         notificationManager.cancel(NOTIFICATION_ID);
     }
+
 
 }

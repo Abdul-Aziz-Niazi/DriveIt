@@ -30,10 +30,16 @@ interface WebService {
     Call<ResponseBody> post(@Url String endpoint);
 
     @POST
+    Call<Void> post(@Url String endpoint, @HeaderMap Map<String, String> headerMap, @Body RequestBody body);
+
+    @POST
     Call<ResponseBody> post(@Url String endpoint, @HeaderMap Map<String, String> headerMap);
 
     @POST
     Call<DIFile> post(@Url String endpoint, @HeaderMap Map<String, String> headerMap, @Body DIFile body);
+
+    @POST
+    Call<Void> postResumable(@Url String endpoint, @HeaderMap Map<String, String> headerMap, @Body DIFile body);
 
     @Multipart
     @POST
