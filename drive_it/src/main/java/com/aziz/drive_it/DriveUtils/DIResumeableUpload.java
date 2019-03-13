@@ -34,7 +34,7 @@ public class DIResumeableUpload {
     private static final String DATA_UPLOAD = "UPLOAD";
     private static final int NOTIFICATION_ID = 908;
     private final Context context;
-    private final ArrayList<DIFile> fileArrayList;
+    private ArrayList<DIFile> fileArrayList;
     private final DICallBack<DIFile> fileDICallBack;
     SharedPreferences preferences;
     int count;
@@ -49,9 +49,10 @@ public class DIResumeableUpload {
         this.fileDICallBack = fileDICallBack;
         preferences = context.getSharedPreferences(DIConstants.PREF_KEY, Context.MODE_PRIVATE);
         count = 0;
-        fileArrayList = filterOutFiles(fileArrayList);
-        if (fileArrayList.size() != 0) {
-            createMetadata(fileArrayList.get(count));
+        ArrayList<DIFile> diFileArrayList = filterOutFiles(fileArrayList);
+        this.fileArrayList = diFileArrayList;
+        if (diFileArrayList.size() != 0) {
+            createMetadata(diFileArrayList.get(count));
         }
     }
 
@@ -151,6 +152,8 @@ public class DIResumeableUpload {
                     } else if (!response.isSuccessful()) {
                         //Error-Pause Right there
                         handleErrorResponse(response.code() + " " + response.errorBody().string());
+                        pauseNotification();
+
 
                     }
                 } catch (Exception e) {
