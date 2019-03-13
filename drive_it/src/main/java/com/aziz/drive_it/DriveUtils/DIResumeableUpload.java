@@ -49,7 +49,20 @@ public class DIResumeableUpload {
         this.fileDICallBack = fileDICallBack;
         preferences = context.getSharedPreferences(DIConstants.PREF_KEY, Context.MODE_PRIVATE);
         count = 0;
-        createMetadata(fileArrayList.get(count));
+        fileArrayList = filterOutFiles(fileArrayList);
+        if (fileArrayList.size() != 0) {
+            createMetadata(fileArrayList.get(count));
+        }
+    }
+
+    private ArrayList<DIFile> filterOutFiles(ArrayList<DIFile> fileArrayList) {
+        ArrayList<DIFile> diFileArrayList = new ArrayList<>();
+        for (DIFile file : fileArrayList) {
+            if (file.getFile() != null && file.getFile().exists()) {
+                diFileArrayList.add(file);
+            }
+        }
+        return diFileArrayList;
     }
 
 
