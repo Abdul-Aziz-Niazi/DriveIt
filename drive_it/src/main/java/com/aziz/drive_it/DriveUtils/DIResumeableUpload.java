@@ -127,6 +127,7 @@ public class DIResumeableUpload {
                             createMetadata(fileArrayList.get(++count));
                         } else {
                             stopNotification();
+                            DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
                         }
 
                     } else if (!response.isSuccessful()) {
