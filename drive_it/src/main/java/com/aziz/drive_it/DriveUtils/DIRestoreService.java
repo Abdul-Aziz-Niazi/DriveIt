@@ -130,8 +130,9 @@ class DIRestoreService extends Service {
                 errors = 0;
                 Log.d(TAG, "progress: 0 out of " + total);
                 if (total == 0) {
-                    updateNotification(count);
                     createNotification(context, 1);
+                    stopForeground(true);
+                    return;
                 }
                 for (final DIFile file : fileArrayList) {
                     restoreEach(file, new DICallBack<File>() {
@@ -147,6 +148,11 @@ class DIRestoreService extends Service {
 
                         @Override
                         public void failure(String error) {
+                            if (error != null && error.contains("authError")) {
+                                callBack.failure(error);
+                                authErrorNotification();
+                                return;
+                            }
                             count++;
                             errors++;
                             callBack.failure(error);
@@ -163,9 +169,29 @@ class DIRestoreService extends Service {
                 count++;
                 errors++;
                 Log.d(TAG, "failure: " + error);
+                if (error != null && error.contains("authError")) {
+                    callBack.failure(error);
+                    authErrorNotification();
+                    return;
+                }
             }
         });
 
+    }
+
+    private void authErrorNotification() {
+        notificationCompat = new NotificationCompat
+                .Builder(context, DATA_RESTORE)
+                .setContentTitle("Restore failed")
+                .setSound(null)
+                .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
+                .setContentText("Auth Error");
+        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationManager.createNotificationChannel(new NotificationChannel(DATA_RESTORE, DATA_RESTORE, NotificationManager.IMPORTANCE_LOW));
+        }
+        Notification notification = notificationCompat.build();
+        notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
 

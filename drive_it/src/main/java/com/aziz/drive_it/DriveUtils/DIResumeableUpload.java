@@ -204,9 +204,7 @@ public class DIResumeableUpload {
         notificationCompat = new NotificationCompat
                 .Builder(context, DATA_UPLOAD)
                 .setContentTitle("")
-                .setProgress(10, 0, true)
                 .setSound(null)
-                .setOngoing(true)
                 .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
                 .setContentText("Backup error, try again later");
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -225,7 +223,7 @@ public class DIResumeableUpload {
                 .Builder(context, DATA_UPLOAD)
                 .setContentTitle("Backup Complete")
                 .setSound(null)
-                .setOngoing(true)
+                .setOngoing(false)
                 .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
                 .setContentText("");
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
