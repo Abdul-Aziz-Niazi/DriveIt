@@ -91,8 +91,9 @@ class DIRestoreService extends Service {
 
     private void updateNotification(int count) {
         notificationCompat.setProgress(total, count, false);
-        notificationCompat.setContentText(count + "/" + total);
+        notificationCompat.setContentText(Math.round((float) count * 100) / (total) + "%");
         notificationCompat.setSound(null);
+        notificationCompat.setOngoing(true);
         notificationManager.notify(NOTIFICATION_ID, notificationCompat.build());
         if (count == total) {
             removeNotification();

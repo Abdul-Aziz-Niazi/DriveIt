@@ -44,19 +44,23 @@ public class DIBackupDetailsRepository {
 
     public void setBackupChanged(boolean backupChanged) {
         this.backupChanged = backupChanged;
+
     }
 
+    public boolean isBackupChanged() {
+        return backupChanged;
+    }
 
     public void getBackupDetails(Context context, final DICallBack<DIBackupDetails> callBack) {
         preferences = context.getSharedPreferences(DIConstants.PREF_KEY, Context.MODE_PRIVATE);
         //Check Local Backup Details
-        if (backupDetails != null && backupDetails.getError() == null && !backupChanged) {
+        if (backupDetails != null && backupDetails.getError() == null && !isBackupChanged()) {
             callBack.success(backupDetails);
             return;
         }
 
         //Check Prefs for Backup Details
-        if (!preferences.getString(DIConstants.PREF_DETAILS, "").equalsIgnoreCase("")) {
+        if (!preferences.getString(DIConstants.PREF_DETAILS, "").equalsIgnoreCase("") && !isBackupChanged()) {
             callBack.success(new Gson().fromJson(preferences.getString(DIConstants.PREF_DETAILS, "{}"), DIBackupDetails.class));
             return;
         }
@@ -83,7 +87,7 @@ public class DIBackupDetailsRepository {
                 backupDetails = diBackupDetails;
                 //prefs
                 preferences.edit().putString(DIConstants.PREF_DETAILS, new Gson().toJson(backupDetails)).apply();
-                backupChanged = false;
+                setBackupChanged(false);
                 callBack.success(diBackupDetails);
             }
 

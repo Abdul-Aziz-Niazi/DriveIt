@@ -3,7 +3,9 @@ package com.aziz.drive_it.DriveUtils;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
@@ -23,6 +25,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+
+import static android.app.Notification.EXTRA_NOTIFICATION_ID;
 
 public class DIResumeableUpload {
 
@@ -52,7 +56,7 @@ public class DIResumeableUpload {
     private void createMetadata(final DIFile diFile) {
         craeteUpdatedNotification();
         Log.d(TAG, "createMetadata: requesting " + diFile.getName());
-        final HashMap<String, String> headers = DINetworkHandler.getHeaders();
+        HashMap<String, String> headers = new HashMap<>(DINetworkHandler.getHeaders());
         headers.put("X-Upload-Content-Length", "" + diFile.getFile().length());
         Gson gson = new Gson();
         headers.put("Content-Length", "" + gson.toJson(diFile).getBytes().length);
@@ -80,6 +84,7 @@ public class DIResumeableUpload {
 
             private void handleErrorResponse(String string) {
                 Log.d(TAG, "handleErrorResponse: " + string);
+                pauseNotification();
             }
 
             @Override
@@ -90,7 +95,7 @@ public class DIResumeableUpload {
     }
 
     private void continueUpload(final String sessionUri, final DIFile diFile, final int chunkStart) throws Exception {
-        HashMap<String, String> headers = DINetworkHandler.getHeaders();
+        HashMap<String, String> headers = new HashMap<>(DINetworkHandler.getHeaders());
         headers.put("Content-Type", URLConnection.guessContentTypeFromName(diFile.getFile().getName()));
         long uploadedBytes = chunkSizeInMb * 1024 * 1024;
         preferences.edit().putInt(DIConstants.CHNK_START, chunkStart).apply();
@@ -161,7 +166,7 @@ public class DIResumeableUpload {
         }
         notificationCompat = new NotificationCompat
                 .Builder(context, DATA_UPLOAD)
-                .setContentTitle("")
+                .setContentTitle("Backup in progress")
                 .setProgress(10, 0, true)
                 .setSound(null)
                 .setOngoing(true)
@@ -186,7 +191,7 @@ public class DIResumeableUpload {
                 .setSound(null)
                 .setOngoing(true)
                 .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
-                .setContentText("Backup Paused");
+                .setContentText("Backup error, try again later");
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (notificationManager.getNotificationChannel(DATA_UPLOAD) != null)

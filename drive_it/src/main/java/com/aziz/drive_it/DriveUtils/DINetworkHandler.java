@@ -5,6 +5,7 @@ import android.content.Context;
 import android.util.Log;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -14,6 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
