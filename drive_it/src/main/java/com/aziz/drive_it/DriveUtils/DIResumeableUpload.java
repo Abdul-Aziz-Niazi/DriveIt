@@ -98,6 +98,7 @@ public class DIResumeableUpload {
 
             private void handleErrorResponse(String string) {
                 Log.d(TAG, "handleErrorResponse: " + string);
+                fileDICallBack.failure(string);
                 pauseNotification();
             }
 
@@ -142,6 +143,7 @@ public class DIResumeableUpload {
                     } else if (response.code() == 200) {
                         //Completed-Choose Next File
                         Log.d(TAG, "onComplete: " + diFile.getName() + " " + count + " " + fileArrayList.size() + " " + response.headers());
+                        fileDICallBack.success(diFile);
                         if (fileArrayList.size() > count + 1) {
                             createMetadata(fileArrayList.get(++count));
                         } else {
@@ -152,9 +154,6 @@ public class DIResumeableUpload {
                     } else if (!response.isSuccessful()) {
                         //Error-Pause Right there
                         handleErrorResponse(response.code() + " " + response.errorBody().string());
-                        pauseNotification();
-
-
                     }
                 } catch (Exception e) {
                     Log.d(TAG, "onException: " + e.getMessage());
@@ -163,6 +162,8 @@ public class DIResumeableUpload {
 
             private void handleErrorResponse(String error) {
                 Log.d(TAG, "handleErrorResponse: " + error);
+                fileDICallBack.failure(error);
+                pauseNotification();
             }
 
             @Override
@@ -223,7 +224,6 @@ public class DIResumeableUpload {
         notificationCompat = new NotificationCompat
                 .Builder(context, DATA_UPLOAD)
                 .setContentTitle("Backup Complete")
-                .setProgress(10, 0, true)
                 .setSound(null)
                 .setOngoing(true)
                 .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
@@ -236,7 +236,7 @@ public class DIResumeableUpload {
             notificationManager.createNotificationChannel(new NotificationChannel(DATA_UPLOAD, DATA_UPLOAD, NotificationManager.IMPORTANCE_LOW));
         }
         Notification notification = notificationCompat.build();
-        notificationManager.cancel(NOTIFICATION_ID);
+        notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
 
