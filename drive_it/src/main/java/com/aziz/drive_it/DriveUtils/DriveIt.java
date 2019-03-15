@@ -26,6 +26,7 @@ import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -41,7 +42,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 
-public class DriveIt {
+public class DriveIt  {
     private static final String TAG = DriveIt.class.getSimpleName();
     private static DriveIt INSTANCE;
     private GoogleSignInClient signInClient;
@@ -50,8 +51,15 @@ public class DriveIt {
     private String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private static DICallBack<DIBackupDetails> autoBackupCallback;
     private DIFile found = null;
+    private static DICallBack<DIFile> backupCallback;
+    private static DICallBack<DIFile> restoreCallback;
 
     private DriveIt() {
+
+    }
+
+    public Context getContext() {
+        return context;
     }
 
     synchronized public static DriveIt getInstance() {
@@ -62,8 +70,8 @@ public class DriveIt {
 
     public void signIn(Context context, DICallBack<String> signInCallBack) {
         signInClient = buildSignInClient(context);
+        this.context = context;
         this.signInCallBack = signInCallBack;
-        DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
         if (context instanceof Activity) {
             ((Activity) context).startActivityForResult(signInClient.getSignInIntent(), DIConstants.REQUEST_BACKUP);
         }
@@ -80,15 +88,17 @@ public class DriveIt {
     }
 
     public void signIn(Fragment host, DICallBack<String> signInCallBack) {
-        this.signInCallBack = signInCallBack;
-        DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
         if (host != null) {
+            this.context = host.getContext();
+            this.signInCallBack = signInCallBack;
+            DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
             signInClient = buildSignInClient(host.getContext());
             host.startActivityForResult(signInClient.getSignInIntent(), DIConstants.REQUEST_BACKUP);
         }
     }
 
     public void silentSignIn(final Context context, final DICallBack<GoogleSignInAccount> callBack) {
+        this.context = context;
         signInClient = buildSignInClient(context);
         final GoogleSignInAccount signedInAccount = GoogleSignIn.getLastSignedInAccount(context);
         if (signedInAccount != null) {
@@ -172,11 +182,12 @@ public class DriveIt {
         new AccountTask(context, signInCallBack).execute(getAccountTask.getResult().getEmail());
     }
 
-    public void startBackup(Context activity, ArrayList<DIFile> files, DICallBack<DIFile> listener) {
+    public void startBackup(Context activity, ArrayList<DIFile> files, DICallBack<DIFile> backupCallback) {
+        DriveIt.backupCallback = backupCallback;
         if (activity == null)
             return;
         if (EasyPermissions.hasPermissions(activity, permissions)) {
-            initiateBackup(activity, files, listener);
+            initiateBackup(activity, files);
         } else {
             Log.e(TAG, "Process Stopped !! Storage permissions error.");
         }
@@ -189,32 +200,46 @@ public class DriveIt {
         DIFileUpdater.update(file, diFileDICallBack);
     }
 
-    private void initiateBackup(Context activity, ArrayList<DIFile> files, DICallBack<DIFile> listener) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            activity.startForegroundService(new Intent(activity, DIRestoreService.class));
-        } else {
-            activity.startService(new Intent(activity, DIRestoreService.class));
+    private void initiateBackup(Context activity, ArrayList<DIFile> files) {
+        Intent intent = new Intent(activity, DIBackupService.class);
+        Gson gson = new Gson();
+        Type type = new TypeToken<ArrayList<DIFile>>() {
+        }.getType();
+        String data = gson.toJson(files, type);
+        String[] fileData = new String[files.size()];
+        for (int i = 0; i < files.size(); i++) {
+            fileData[i] = files.get(i).getFile().getAbsolutePath();
         }
-        DIBackupService.getInstance().startBackup(activity, files, listener);
+
+        intent.putExtra(DIConstants.DATA, data);
+        intent.putExtra(DIConstants.DATA_FILES, fileData);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            activity.startForegroundService(intent);
+        } else {
+            activity.startService(intent);
+        }
+//        DIBackupService.getInstance().startBackup(activity, files, listener);
     }
 
-    public void startRestore(Context activity, DICallBack<DIFile> listener) {
+    public void startRestore(Context activity, DICallBack<DIFile> restoreCallback) {
+        DriveIt.restoreCallback = restoreCallback;
         if (activity == null)
             return;
         if (EasyPermissions.hasPermissions(activity, permissions)) {
-            initiateRestore(activity, listener);
+            initiateRestore(activity);
         } else {
             Log.e(TAG, "Process Stopped !! Storage permissions error.");
         }
     }
 
-    private void initiateRestore(Context activity, DICallBack<DIFile> listener) {
+
+    private void initiateRestore(Context activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             activity.startForegroundService(new Intent(activity, DIRestoreService.class));
         } else {
             activity.startService(new Intent(activity, DIRestoreService.class));
         }
-        DIRestoreService.getInstance().startRestore(activity, listener);
     }
 
     public void setAutoBackup(Frequency frequency, String[] filePaths, DICallBack<DIBackupDetails> autoBackupCallback) {
@@ -342,14 +367,28 @@ public class DriveIt {
         }
     }
 
-//    @Subscribe
-//    public void autoBackupSuccessful(DIBackupDetails backupDetails) {
-//        Log.d(TAG, "autoBackupSuccessful: " + backupDetails.getError());
-//        if (backupDetails.getError() == null)
-//            autoBackupCallback.success(backupDetails);
-//        else
-//            autoBackupCallback.failure(backupDetails.getError());
-//    }
+    static void backupFileComplete(DIFile diFile) {
+        if (backupCallback != null)
+            backupCallback.success(diFile);
+    }
+
+    static void backupFileFailed(String error) {
+        if (backupCallback != null)
+            backupCallback.failure(error);
+
+    }
+
+    static void restoreFileComplete(DIFile diFile) {
+        if (restoreCallback != null)
+            restoreCallback.success(diFile);
+    }
+
+    static void restoreFileFailed(String error) {
+        if (restoreCallback != null)
+            restoreCallback.failure(error);
+
+    }
+
 
     static void autoBackupComplete(DIBackupDetails backupDetails) {
         if (autoBackupCallback != null)

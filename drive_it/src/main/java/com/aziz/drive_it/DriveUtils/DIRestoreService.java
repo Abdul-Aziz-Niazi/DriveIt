@@ -27,7 +27,7 @@ import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-class DIRestoreService extends Service {
+public class DIRestoreService extends Service {
     private static final String TAG = DIRestoreService.class.getSimpleName();
     private static final int NOTIFICATION_ID = 909;
     private static final String DATA_RESTORE = "RESTORE";
@@ -47,6 +47,11 @@ class DIRestoreService extends Service {
         return null;
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        startRestore(getApplicationContext());
+        return super.onStartCommand(intent, flags, startId);
+    }
 
     private void createNotification(Context context, int type) {
         Log.d(TAG, "createNotification: creating notification " + type);
@@ -63,6 +68,7 @@ class DIRestoreService extends Service {
                 notificationManager.createNotificationChannel(new NotificationChannel(DATA_RESTORE, DATA_RESTORE, NotificationManager.IMPORTANCE_LOW));
             }
             Notification notification = notificationCompat.build();
+            startForeground(NOTIFICATION_ID, notification);
             notificationManager.notify(NOTIFICATION_ID, notification);
         } else {
             notificationCompat = new NotificationCompat
@@ -102,6 +108,7 @@ class DIRestoreService extends Service {
         }
     }
 
+
     private void removeNotification() {
         notificationManager.cancel(NOTIFICATION_ID);
     }
@@ -112,14 +119,14 @@ class DIRestoreService extends Service {
         return INSTANCE;
     }
 
-    public void startRestore(Context context, DICallBack<DIFile> fileDICallBack) {
+    public void startRestore(Context context) {
         this.context = context;
         createNotification(context, 0);
-        restore(fileDICallBack);
+        restore();
     }
 
 
-    public void restore(final DICallBack<DIFile> callBack) {
+    public void restore() {
         DIFileLister.list(new DICallBack<ArrayList<DIFile>>() {
             @Override
             public void success(ArrayList<DIFile> diFileArrayList) {
@@ -140,7 +147,7 @@ class DIRestoreService extends Service {
                         public void success(File data) {
                             count++;
                             file.setFile(data);
-                            callBack.success(file);
+                            DriveIt.restoreFileComplete(file);
                             updateNotification(count);
                             Log.d(TAG, "progress: " + count + " out of " + total + " " + data.getName() + " " + file.getKind());
 
@@ -149,13 +156,13 @@ class DIRestoreService extends Service {
                         @Override
                         public void failure(String error) {
                             if (error != null && error.contains("authError")) {
-                                callBack.failure(error);
+                                DriveIt.restoreFileFailed(error);
                                 authErrorNotification();
                                 return;
                             }
                             count++;
                             errors++;
-                            callBack.failure(error);
+                            DriveIt.restoreFileFailed(error);
                             updateNotification(count);
                             Log.d(TAG, "progress: " + count + " out of " + total + " " + error + " " + file.getKind());
                         }
@@ -170,7 +177,8 @@ class DIRestoreService extends Service {
                 errors++;
                 Log.d(TAG, "failure: " + error);
                 if (error != null && error.contains("authError")) {
-                    callBack.failure(error);
+                    DriveIt.restoreFileFailed(error);
+
                     authErrorNotification();
                     return;
                 }

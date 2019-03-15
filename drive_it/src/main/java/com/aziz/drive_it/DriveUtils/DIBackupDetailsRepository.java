@@ -43,12 +43,14 @@ public class DIBackupDetailsRepository {
     }
 
     public void setBackupChanged(boolean backupChanged) {
+        preferences = DriveIt.getInstance().getContext().getSharedPreferences(DIConstants.PREF_KEY, Context.MODE_PRIVATE);
         this.backupChanged = backupChanged;
-
+        preferences.edit().putBoolean(DIConstants.BKP_CHANGED, backupChanged).apply();
     }
 
     public boolean isBackupChanged() {
-        return backupChanged;
+        preferences = DriveIt.getInstance().getContext().getSharedPreferences(DIConstants.PREF_KEY, Context.MODE_PRIVATE);
+        return preferences.getBoolean(DIConstants.BKP_CHANGED, true);
     }
 
     public void getBackupDetails(Context context, final DICallBack<DIBackupDetails> callBack) {

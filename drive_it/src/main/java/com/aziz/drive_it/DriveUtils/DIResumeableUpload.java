@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -26,27 +27,35 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-import static android.app.Notification.EXTRA_NOTIFICATION_ID;
+import static android.app.Notification.FLAG_FOREGROUND_SERVICE;
 
 public class DIResumeableUpload {
 
     private static final String TAG = DIResumeableUpload.class.getSimpleName();
     private static final String DATA_UPLOAD = "UPLOAD";
-    private static final int NOTIFICATION_ID = 908;
-    private final Context context;
+    private static DIResumeableUpload instance;
+    private Context context;
     private ArrayList<DIFile> fileArrayList;
-    private final DICallBack<DIFile> fileDICallBack;
     SharedPreferences preferences;
     int count;
     private NotificationCompat.Builder notificationCompat;
     private int icon;
     private NotificationManager notificationManager;
-    private int chunkSizeInMb = 5;
+    private int chunkSizeInMb = 2;
 
-    public DIResumeableUpload(Context context, ArrayList<DIFile> fileArrayList, DICallBack<DIFile> fileDICallBack) {
+    public static DIResumeableUpload getInstance() {
+        if (instance == null)
+            instance = new DIResumeableUpload();
+        return instance;
+    }
+
+    private DIResumeableUpload() {
+
+    }
+
+    public void setResumeData(Context context, ArrayList<DIFile> fileArrayList) {
         this.context = context;
         this.fileArrayList = fileArrayList;
-        this.fileDICallBack = fileDICallBack;
         preferences = context.getSharedPreferences(DIConstants.PREF_KEY, Context.MODE_PRIVATE);
         count = 0;
         ArrayList<DIFile> diFileArrayList = filterOutFiles(fileArrayList);
@@ -54,6 +63,14 @@ public class DIResumeableUpload {
         if (diFileArrayList.size() != 0) {
             createMetadata(diFileArrayList.get(count));
         }
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public ArrayList<DIFile> getFileArrayList() {
+        return fileArrayList;
     }
 
     private ArrayList<DIFile> filterOutFiles(ArrayList<DIFile> fileArrayList) {
@@ -67,7 +84,7 @@ public class DIResumeableUpload {
     }
 
 
-    private void createMetadata(final DIFile diFile) {
+    public void createMetadata(final DIFile diFile) {
         craeteUpdatedNotification();
         Log.d(TAG, "createMetadata: requesting " + diFile.getName());
         HashMap<String, String> headers = new HashMap<>(DINetworkHandler.getHeaders());
@@ -80,12 +97,13 @@ public class DIResumeableUpload {
         post.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                Log.d(TAG, "onResponse: " + response.code() + " " + response.headers() + " " + response.message());
+                Log.d(TAG, "onResponse: " + response.code() + " " + diFile.getName() + "  ==>" + count);
                 try {
                     if (response.isSuccessful()) {
                         String sessionUri = response.headers().get("location");
                         preferences.edit().putString(DIConstants.UPLD_POS, sessionUri).apply();
-                        Log.d(TAG, "onResponse: Success " + sessionUri + " ");
+                        preferences.edit().putInt(DIConstants.FILE_NUM, count).apply();
+                        Log.d(TAG, "onResponse: Success " + " " + diFile.getName());
                         continueUpload(sessionUri, diFile, 0);
                     } else {
                         Log.d(TAG, "onUnsuccessful: " + response.errorBody().string());
@@ -98,7 +116,7 @@ public class DIResumeableUpload {
 
             private void handleErrorResponse(String string) {
                 Log.d(TAG, "handleErrorResponse: " + string);
-                fileDICallBack.failure(string);
+                DriveIt.backupFileFailed(string);
                 pauseNotification();
             }
 
@@ -109,68 +127,86 @@ public class DIResumeableUpload {
         });
     }
 
-    private void continueUpload(final String sessionUri, final DIFile diFile, final int chunkStart) throws Exception {
-        HashMap<String, String> headers = new HashMap<>(DINetworkHandler.getHeaders());
-        headers.put("Content-Type", URLConnection.guessContentTypeFromName(diFile.getFile().getName()));
-        long uploadedBytes = chunkSizeInMb * 1024 * 1024;
-        preferences.edit().putInt(DIConstants.CHNK_START, chunkStart).apply();
-        if (chunkStart + uploadedBytes > diFile.getFile().length()) {
-            uploadedBytes = (int) diFile.getFile().length() - chunkStart;
-        }
-        headers.put("Content-Length", "" + uploadedBytes);
-        headers.put("Content-Range", "bytes " + chunkStart + "-" + (chunkStart + uploadedBytes - 1) + "/" + diFile.getFile().length());
-        byte[] uploadArrayBytes = new byte[(int) uploadedBytes];
-        FileInputStream fileInputStream = new FileInputStream(diFile.getFile());
-        fileInputStream.getChannel().position(chunkStart);
-        if (fileInputStream.read(uploadArrayBytes, 0, (int) uploadedBytes) == -1) {
-            return;
-        }
-        fileInputStream.close();
-        final RequestBody requestBody = RequestBody.create(MediaType.get("application/octet-stream"), uploadArrayBytes);
-        Call<Void> post = DINetworkHandler.getInstance().getWebService().post(sessionUri, headers, requestBody);
-        post.enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                try {
-                    if (response.code() == 308) {
-                        //Incomplete-Continue
-                        String range = response.headers().get("range");
-                        Log.d(TAG, "onContinue: " + range);
-                        int start = Integer.parseInt(range.split("-")[1]);
-                        preferences.edit().putInt(DIConstants.CHNK_START, start).apply();
-                        continueUpload(sessionUri, diFile, start);
+    public void continueUpload(final String sessionUri, final DIFile diFile, final int chunkStart) {
+        try {
+            HashMap<String, String> headers = new HashMap<>(DINetworkHandler.getHeaders());
+            headers.put("Content-Type", URLConnection.guessContentTypeFromName(diFile.getFile().getName()));
+            long uploadedBytes = chunkSizeInMb * 1024 * 1024;
+            preferences.edit().putInt(DIConstants.CHNK_START, chunkStart).apply();
+            if (chunkStart + uploadedBytes > diFile.getFile().length()) {
+                uploadedBytes = (int) diFile.getFile().length() - chunkStart;
+            }
+            headers.put("Content-Length", "" + uploadedBytes);
+            headers.put("Content-Range", "bytes " + chunkStart + "-" + (chunkStart + uploadedBytes - 1) + "/" + diFile.getFile().length());
+            byte[] uploadArrayBytes = createUploadBytes(chunkStart, diFile, uploadedBytes);
 
-                    } else if (response.code() == 200) {
-                        //Completed-Choose Next File
-                        Log.d(TAG, "onComplete: " + diFile.getName() + " " + count + " " + fileArrayList.size() + " " + response.headers());
-                        fileDICallBack.success(diFile);
-                        if (fileArrayList.size() > count + 1) {
-                            createMetadata(fileArrayList.get(++count));
-                        } else {
-                            stopNotification();
-                            DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
+            final RequestBody requestBody = RequestBody.create(MediaType.get("application/octet-stream"), uploadArrayBytes);
+            Call<Void> post = DINetworkHandler.getInstance().getWebService().post(sessionUri, headers, requestBody);
+            post.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    try {
+                        if (response.code() == 308) {
+                            //Incomplete-Continue
+                            String range = response.headers().get("range");
+                            Log.d(TAG, "onContinue: " + range);
+                            craeteUpdatedNotification();
+                            int start = Integer.parseInt(range.split("-")[1]);
+                            preferences.edit().putInt(DIConstants.CHNK_START, start).apply();
+                            preferences.edit().putInt(DIConstants.FILE_NUM, count).apply();
+                            continueUpload(sessionUri, diFile, start);
+
+                        } else if (response.code() == 200) {
+                            //Completed-Choose Next File
+                            Log.d(TAG, "onComplete: " + diFile.getName() + " " + count + " " + fileArrayList.size());
+                            DriveIt.backupFileComplete(diFile);
+                            if (fileArrayList.size() > count + 1) {
+                                preferences.edit().putInt(DIConstants.FILE_NUM, count).apply();
+                                createMetadata(fileArrayList.get(++count));
+                            } else {
+                                stopNotification();
+                                DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
+                            }
+
+                        } else if (!response.isSuccessful()) {
+                            //Error-Pause Right there
+                            handleErrorResponse(response.code() + " " + response.errorBody().string());
                         }
-
-                    } else if (!response.isSuccessful()) {
-                        //Error-Pause Right there
-                        handleErrorResponse(response.code() + " " + response.errorBody().string());
+                    } catch (Exception e) {
+                        Log.d(TAG, "onException: " + e.getMessage());
                     }
-                } catch (Exception e) {
-                    Log.d(TAG, "onException: " + e.getMessage());
                 }
-            }
 
-            private void handleErrorResponse(String error) {
-                Log.d(TAG, "handleErrorResponse: " + error);
-                fileDICallBack.failure(error);
-                pauseNotification();
-            }
+                private void handleErrorResponse(String error) {
+                    Log.d(TAG, "handleErrorResponse: " + error);
+                    DriveIt.backupFileFailed(error);
+                    pauseNotification();
+                }
 
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                handleErrorResponse(t.getMessage());
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    handleErrorResponse(t.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            pauseNotification();
+        }
+    }
+
+    public byte[] createUploadBytes(int chunk, DIFile diFile, long uploadedBytes) {
+        try {
+            byte[] uploadArrayBytes = new byte[(int) uploadedBytes];
+            FileInputStream fileInputStream = new FileInputStream(diFile.getFile());
+            fileInputStream.getChannel().position(chunk);
+            if (fileInputStream.read(uploadArrayBytes, 0, (int) uploadedBytes) == -1) {
+                return uploadArrayBytes;
             }
-        });
+            fileInputStream.close();
+            return uploadArrayBytes;
+        } catch (Exception e) {
+            return new byte[(int) uploadedBytes];
+        }
+
     }
 
 
@@ -178,7 +214,8 @@ public class DIResumeableUpload {
         if (notificationCompat != null) {
             notificationCompat.setProgress(fileArrayList.size(), count, false);
             notificationCompat.setContentText(Math.round((float) count * 100) / (fileArrayList.size()) + "%");
-            notificationManager.notify(NOTIFICATION_ID, notificationCompat.build());
+            notificationCompat.mActions.clear();
+            notificationManager.notify(DIConstants.NOTIFICATION_ID, notificationCompat.build());
             return;
         }
         notificationCompat = new NotificationCompat
@@ -197,15 +234,24 @@ public class DIResumeableUpload {
             notificationManager.createNotificationChannel(new NotificationChannel(DATA_UPLOAD, DATA_UPLOAD, NotificationManager.IMPORTANCE_LOW));
         }
         Notification notification = notificationCompat.build();
-        notificationManager.notify(NOTIFICATION_ID, notification);
+        notificationManager.notify(DIConstants.NOTIFICATION_ID, notification);
     }
 
     public void pauseNotification() {
+        Intent intent = new Intent(context, ButtonReceiver.class);
+        intent.setAction("drive_it.retry");
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 90, intent, PendingIntent.FLAG_ONE_SHOT);
+        Intent dismissIntent = new Intent(context, ButtonReceiver.class);
+        dismissIntent.setAction("drive_it.cancel");
+        PendingIntent dismiss = PendingIntent.getBroadcast(context, 90, dismissIntent, PendingIntent.FLAG_ONE_SHOT);
+
         notificationCompat = new NotificationCompat
                 .Builder(context, DATA_UPLOAD)
                 .setContentTitle("")
                 .setSound(null)
                 .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
+                .addAction(0, "Retry", pendingIntent)
+                .addAction(0, "Cancel", dismiss)
                 .setContentText("Backup error, try again later");
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -215,8 +261,9 @@ public class DIResumeableUpload {
             notificationManager.createNotificationChannel(new NotificationChannel(DATA_UPLOAD, DATA_UPLOAD, NotificationManager.IMPORTANCE_LOW));
         }
         Notification notification = notificationCompat.build();
-        notificationManager.notify(NOTIFICATION_ID, notification);
+        notificationManager.notify(DIConstants.NOTIFICATION_ID, notification);
     }
+
 
     public void stopNotification() {
         notificationCompat = new NotificationCompat
@@ -234,7 +281,7 @@ public class DIResumeableUpload {
             notificationManager.createNotificationChannel(new NotificationChannel(DATA_UPLOAD, DATA_UPLOAD, NotificationManager.IMPORTANCE_LOW));
         }
         Notification notification = notificationCompat.build();
-        notificationManager.notify(NOTIFICATION_ID, notification);
+        notificationManager.notify(DIConstants.NOTIFICATION_ID, notification);
     }
 
 

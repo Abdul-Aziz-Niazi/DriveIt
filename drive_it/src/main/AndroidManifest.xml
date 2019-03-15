@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.aziz.drive_it">
     <application>
+
         <service android:name=".DriveUtils.DIDeleteBackupService"/>
+        <service android:name=".DriveUtils.DIBackupService"/>
+        <service android:name=".DriveUtils.DIRestoreService"/>
+        <receiver android:name=".DriveUtils.ButtonReceiver"/>
     </application>
 </manifest>

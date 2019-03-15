@@ -17,6 +17,8 @@ import com.aziz.drive_it.DriveUtils.model.DIBackupDetails;
 import com.aziz.drive_it.DriveUtils.model.DIFile;
 import com.aziz.drive_it.R;
 import com.google.android.gms.drive.Drive;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.greenrobot.eventbus.EventBus;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -24,10 +26,11 @@ import retrofit2.Response;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 
-class DIBackupService extends Service {
+public class DIBackupService extends Service {
 
     private static DIBackupService INSTANCE;
     private static final String TAG = DIBackupService.class.getSimpleName();
@@ -37,8 +40,9 @@ class DIBackupService extends Service {
     private NotificationManager notificationManager;
     private int total = 0;
     private int count = 0;
-    private Context context;
     private int icon;
+    private Context context;
+    private ArrayList<DIFile> diFileArrayList;
 
     public static DIBackupService getInstance() {
         if (INSTANCE == null)
@@ -47,17 +51,41 @@ class DIBackupService extends Service {
         return INSTANCE;
     }
 
+    public ArrayList<DIFile> getDiFileArrayList() {
+        return diFileArrayList;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        INSTANCE = this;
+        Log.d(TAG, "onStartCommand: Worked " + intent.getExtras().getString(DIConstants.DATA, "NULL"));
+        Log.d(TAG, "onStartCommand: Worked " );
+        Type type = new TypeToken<ArrayList<DIFile>>() {
+        }.getType();
+        String DATA = intent.getExtras().getString(DIConstants.DATA, "NULL");
+        String[] DATA_FILES = intent.getExtras().getStringArray(DIConstants.DATA_FILES);
+        Gson gson = new Gson();
+        diFileArrayList = gson.fromJson(DATA, type);
+        for (int i = 0; i < diFileArrayList.size(); i++) {
+            diFileArrayList.get(i).setFile(new File(DATA_FILES[i]));
+        }
+        startBackup(getApplicationContext(), diFileArrayList);
+        createNotification(getApplicationContext(), 0);
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
-    public void startBackup(Context context, ArrayList<DIFile> fileArrayList, DICallBack<DIFile> fileDICallBack) {
+    public void startBackup(Context context, ArrayList<DIFile> fileArrayList) {
         this.context = context;
         createNotification(context, 0);
-        new DIResumeableUpload(context, fileArrayList, fileDICallBack);
-//        backup(fileArrayList, fileDICallBack);
+
+        DIResumeableUpload.getInstance().setResumeData(context, fileArrayList);
     }
 
     public void setIcon(@DrawableRes int icon) {
@@ -120,7 +148,6 @@ class DIBackupService extends Service {
                 diCallBack.failure("Failed to upload " + t.getMessage());
             }
         });
-
     }
 
     private void handleFailure(Response<DIFile> response, DICallBack<DIFile> diCallBack, DIFile file) {
@@ -159,6 +186,7 @@ class DIBackupService extends Service {
                 notificationManager.createNotificationChannel(new NotificationChannel(DATA_BACKUP, DATA_BACKUP, NotificationManager.IMPORTANCE_LOW));
             }
             Notification notification = notificationCompat.build();
+            startForeground(NOTIFICATION_ID, notification);
             notificationManager.notify(NOTIFICATION_ID, notification);
         } else {
             notificationCompat = new NotificationCompat

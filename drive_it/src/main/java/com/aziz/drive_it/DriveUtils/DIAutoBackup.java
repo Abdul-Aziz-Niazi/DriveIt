@@ -18,9 +18,12 @@ import com.google.android.gms.auth.api.signin.*;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.tasks.Task;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 public class DIAutoBackup extends Worker {
@@ -121,24 +124,27 @@ public class DIAutoBackup extends Worker {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            Log.d(TAG, "onPostExecute: STARTING SERVICE");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(new Intent(context, DIBackupService.class));
-            } else {
-                context.startService(new Intent(context, DIBackupService.class));
+            Log.d(TAG, "onPostExecute: STARTING SERVICE " + fileArrayList);
+
+            Intent intent = new Intent(context, DIBackupService.class);
+            Gson gson = new Gson();
+            Type type = new TypeToken<ArrayList<DIFile>>() {
+            }.getType();
+            String data = gson.toJson(fileArrayList, type);
+            String[] fileData = new String[fileArrayList.size()];
+            for (int i = 0; i < fileArrayList.size(); i++) {
+                fileData[i] = fileArrayList.get(i).getFile().getAbsolutePath();
             }
 
-            DIBackupService.getInstance().startBackup(context, fileArrayList, new DICallBack<DIFile>() {
-                @Override
-                public void success(DIFile file) {
-                    Log.d(TAG, "success: auto-backup");
-                }
+            intent.putExtra(DIConstants.DATA, data);
+            intent.putExtra(DIConstants.DATA_FILES, fileData);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent);
+            } else {
+                context.startService(intent);
+            }
 
-                @Override
-                public void failure(String error) {
-                    Log.d(TAG, "failure: auto-backup");
-                }
-            });
+//            DIBackupService.getInstance().startBackup(context, fileArrayList);
         }
     }
 }
