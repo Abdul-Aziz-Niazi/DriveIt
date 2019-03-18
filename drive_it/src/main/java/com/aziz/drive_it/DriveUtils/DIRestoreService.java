@@ -49,6 +49,8 @@ public class DIRestoreService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent.getExtras() != null)
+            icon = intent.getExtras().getInt(DIConstants.DATA_ICON, 0);
         startRestore(getApplicationContext());
         return super.onStartCommand(intent, flags, startId);
     }
@@ -99,6 +101,7 @@ public class DIRestoreService extends Service {
         notificationCompat.setProgress(total, count, false);
         notificationCompat.setContentText(Math.round((float) count * 100) / (total) + "%");
         notificationCompat.setSound(null);
+        notificationCompat.setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
         notificationCompat.setOngoing(true);
         notificationManager.notify(NOTIFICATION_ID, notificationCompat.build());
         if (count == total) {
@@ -121,7 +124,7 @@ public class DIRestoreService extends Service {
 
     public void startRestore(Context context) {
         this.context = context;
-        createNotification(context, 0);
+        createNotification(context,0);
         restore();
     }
 

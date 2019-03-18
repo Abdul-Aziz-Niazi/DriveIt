@@ -59,11 +59,12 @@ public class DIBackupService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         INSTANCE = this;
         Log.d(TAG, "onStartCommand: Worked " + intent.getExtras().getString(DIConstants.DATA, "NULL"));
-        Log.d(TAG, "onStartCommand: Worked " );
+        Log.d(TAG, "onStartCommand: Worked ");
         Type type = new TypeToken<ArrayList<DIFile>>() {
         }.getType();
         String DATA = intent.getExtras().getString(DIConstants.DATA, "NULL");
         String[] DATA_FILES = intent.getExtras().getStringArray(DIConstants.DATA_FILES);
+        icon = intent.getExtras().getInt(DIConstants.DATA_ICON, 0);
         Gson gson = new Gson();
         diFileArrayList = gson.fromJson(DATA, type);
         for (int i = 0; i < diFileArrayList.size(); i++) {

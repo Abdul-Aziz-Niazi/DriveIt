@@ -42,6 +42,7 @@ public class DIResumeableUpload {
     private int icon;
     private NotificationManager notificationManager;
     private int chunkSizeInMb = 2;
+    private Intent retryOnErrorIntent;
 
     public static DIResumeableUpload getInstance() {
         if (instance == null)
@@ -56,6 +57,7 @@ public class DIResumeableUpload {
     public void setResumeData(Context context, ArrayList<DIFile> fileArrayList) {
         this.context = context;
         this.fileArrayList = fileArrayList;
+        retryOnErrorIntent = new Intent(context, ButtonReceiver.class);
         preferences = context.getSharedPreferences(DIConstants.PREF_KEY, Context.MODE_PRIVATE);
         count = 0;
         ArrayList<DIFile> diFileArrayList = filterOutFiles(fileArrayList);
@@ -117,6 +119,7 @@ public class DIResumeableUpload {
             private void handleErrorResponse(String string) {
                 Log.d(TAG, "handleErrorResponse: " + string);
                 DriveIt.backupFileFailed(string);
+                retryOnErrorIntent.putExtra(DIConstants.ERROR_DETAILS, string);
                 pauseNotification();
             }
 
@@ -180,6 +183,7 @@ public class DIResumeableUpload {
                 private void handleErrorResponse(String error) {
                     Log.d(TAG, "handleErrorResponse: " + error);
                     DriveIt.backupFileFailed(error);
+                    retryOnErrorIntent.putExtra(DIConstants.ERROR_DETAILS, error);
                     pauseNotification();
                 }
 
@@ -238,9 +242,8 @@ public class DIResumeableUpload {
     }
 
     public void pauseNotification() {
-        Intent intent = new Intent(context, ButtonReceiver.class);
-        intent.setAction("drive_it.retry");
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 90, intent, PendingIntent.FLAG_ONE_SHOT);
+        retryOnErrorIntent.setAction("drive_it.retry");
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 90, retryOnErrorIntent, PendingIntent.FLAG_ONE_SHOT);
         Intent dismissIntent = new Intent(context, ButtonReceiver.class);
         dismissIntent.setAction("drive_it.cancel");
         PendingIntent dismiss = PendingIntent.getBroadcast(context, 90, dismissIntent, PendingIntent.FLAG_ONE_SHOT);
@@ -286,5 +289,9 @@ public class DIResumeableUpload {
 
     public void setIcon(int icon) {
         this.icon = icon;
+    }
+
+    public int getIcon() {
+        return icon;
     }
 }

@@ -24,6 +24,8 @@ class DIConstants {
     public static final int NOTIFICATION_ID = 908;
     public static final String FILE_NUM = "number_of_file";
     public static final String BKP_CHANGED = "backup_changed";
+    public static final String DATA_ICON = "notificatio_icon";
+    public static final String ERROR_DETAILS = "error_details";
 
 
     public static int SMALL_ICON;

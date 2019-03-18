@@ -19,7 +19,7 @@ public class ButtonReceiver extends BroadcastReceiver {
     private static final String DATA_UPLOAD = "UPLOAD";
     NotificationManager manager;
     SharedPreferences preferences;
-    private int icon;
+    private int icon = DIResumeableUpload.getInstance().getIcon();
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -33,13 +33,17 @@ public class ButtonReceiver extends BroadcastReceiver {
             manager.cancel(DIConstants.NOTIFICATION_ID);
         } else if (intent.getAction().equalsIgnoreCase("drive_it.retry")) {
             updateNotification(context);
-            String sessionUri = preferences.getString(DIConstants.UPLD_POS, null);
-            int count = preferences.getInt(DIConstants.FILE_NUM, 0);
-            int startChunk = preferences.getInt(DIConstants.CHNK_START, 0);
-            DIFile diFile = DIBackupService.getInstance().getDiFileArrayList().get(count);
-            if (sessionUri != null) {
-                DIResumeableUpload.getInstance().continueUpload(sessionUri, diFile, 0);
-            }
+            restartFromLastFile();
+        }
+    }
+
+    private void restartFromLastFile() {
+        String sessionUri = preferences.getString(DIConstants.UPLD_POS, null);
+        int count = preferences.getInt(DIConstants.FILE_NUM, 0);
+        int startChunk = preferences.getInt(DIConstants.CHNK_START, 0);
+        DIFile diFile = DIBackupService.getInstance().getDiFileArrayList().get(count);
+        if (sessionUri != null) {
+            DIResumeableUpload.getInstance().continueUpload(sessionUri, diFile, 0);
         }
     }
 

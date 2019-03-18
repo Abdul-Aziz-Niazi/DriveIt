@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 
-public class DriveIt  {
+public class DriveIt {
     private static final String TAG = DriveIt.class.getSimpleName();
     private static DriveIt INSTANCE;
     private GoogleSignInClient signInClient;
@@ -53,6 +53,7 @@ public class DriveIt  {
     private DIFile found = null;
     private static DICallBack<DIFile> backupCallback;
     private static DICallBack<DIFile> restoreCallback;
+    private int icon;
 
     private DriveIt() {
 
@@ -77,15 +78,13 @@ public class DriveIt  {
         }
     }
 
-    public void setIcon(Context context, @DrawableRes int id) {
-        Log.d(TAG, "setIcon: " + context.getApplicationInfo().packageName + " " + context.getResources().getResourceEntryName(id));
-        Log.d(TAG, "setIcon: " + context.getResources().getIdentifier(context.getResources().getResourceName(id), context.getResources().getResourceTypeName(id), context.getPackageName()));
-//        DIConstants.icon = BitmapFactory.decodeResource(context.getResources(), id);
-        DIConstants.SMALL_ICON = id;
-        DIBackupService.getInstance().setIcon(id);
-        DIDeleteBackupService.getInstance().setIcon(id);
-        DIRestoreService.getInstance().setIcon(id);
-        DIResumeableUpload.getInstance().setIcon(id);
+    public void setIcon(@DrawableRes int icon) {
+        this.icon = icon;
+        DIConstants.SMALL_ICON = icon;
+        DIBackupService.getInstance().setIcon(icon);
+        DIDeleteBackupService.getInstance().setIcon(icon);
+        DIRestoreService.getInstance().setIcon(icon);
+        DIResumeableUpload.getInstance().setIcon(icon);
     }
 
     public void signIn(Fragment host, DICallBack<String> signInCallBack) {
@@ -214,6 +213,8 @@ public class DriveIt  {
 
         intent.putExtra(DIConstants.DATA, data);
         intent.putExtra(DIConstants.DATA_FILES, fileData);
+        if (icon != 0)
+            intent.putExtra(DIConstants.DATA_ICON, icon);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             activity.startForegroundService(intent);
@@ -236,10 +237,14 @@ public class DriveIt  {
 
 
     private void initiateRestore(Context activity) {
+        Intent intent = new Intent(activity, DIRestoreService.class);
+
+        if (icon != 0)
+            intent.putExtra(DIConstants.DATA_ICON, icon);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            activity.startForegroundService(new Intent(activity, DIRestoreService.class));
+            activity.startForegroundService(intent);
         } else {
-            activity.startService(new Intent(activity, DIRestoreService.class));
+            activity.startService(intent);
         }
     }
 

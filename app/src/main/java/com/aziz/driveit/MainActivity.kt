@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
                 diFile.setFile(file, "desc-${file.name}")
                 fileList.add(diFile)
             }
-            DriveIt.getInstance().setIcon(this@MainActivity, R.drawable.ic_gdrive)
+            DriveIt.getInstance().setIcon(R.drawable.ic_gdrive)
             DriveIt.getInstance().startBackup(this@MainActivity, fileList, object : DICallBack<DIFile> {
                 override fun success(file: DIFile?) {
                     Log.d("MAIN", "Backup ${file!!.name}")
@@ -117,6 +117,8 @@ class MainActivity : AppCompatActivity() {
             })
         }
         restore.setOnClickListener {
+            DriveIt.getInstance().setIcon(R.drawable.ic_gdrive)
+
             DriveIt.getInstance().startRestore(this@MainActivity, object : DICallBack<DIFile> {
                 override fun success(file: DIFile?) {
                     Log.d("MAIN", "DONE ${file!!.name}")
