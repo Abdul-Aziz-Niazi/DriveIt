@@ -31,6 +31,8 @@ public class ButtonReceiver extends BroadcastReceiver {
         if (intent.getAction().equalsIgnoreCase("drive_it.cancel")) {
             manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             manager.cancel(DIConstants.NOTIFICATION_ID);
+            Intent backupIntent = new Intent(context, DIBackupService.class);
+            context.stopService(backupIntent);
         } else if (intent.getAction().equalsIgnoreCase("drive_it.retry")) {
             updateNotification(context);
             restartFromLastFile();

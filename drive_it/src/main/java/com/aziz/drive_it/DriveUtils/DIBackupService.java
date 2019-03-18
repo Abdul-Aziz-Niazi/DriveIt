@@ -86,7 +86,7 @@ public class DIBackupService extends Service {
         this.context = context;
         createNotification(context, 0);
 
-        DIResumeableUpload.getInstance().setResumeData(context, fileArrayList);
+        DIResumeableUpload.getInstance().setResumeData(this, fileArrayList);
     }
 
     public void setIcon(@DrawableRes int icon) {
@@ -246,5 +246,9 @@ public class DIBackupService extends Service {
         notificationManager.cancel(NOTIFICATION_ID);
     }
 
-
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        removeNotification();
+    }
 }

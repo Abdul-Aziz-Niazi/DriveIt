@@ -34,7 +34,7 @@ public class DIResumeableUpload {
     private static final String TAG = DIResumeableUpload.class.getSimpleName();
     private static final String DATA_UPLOAD = "UPLOAD";
     private static DIResumeableUpload instance;
-    private Context context;
+    private DIBackupService context;
     private ArrayList<DIFile> fileArrayList;
     SharedPreferences preferences;
     int count;
@@ -54,7 +54,7 @@ public class DIResumeableUpload {
 
     }
 
-    public void setResumeData(Context context, ArrayList<DIFile> fileArrayList) {
+    public void setResumeData(DIBackupService context, ArrayList<DIFile> fileArrayList) {
         this.context = context;
         this.fileArrayList = fileArrayList;
         retryOnErrorIntent = new Intent(context, ButtonReceiver.class);
@@ -168,6 +168,7 @@ public class DIResumeableUpload {
                                 createMetadata(fileArrayList.get(++count));
                             } else {
                                 stopNotification();
+
                                 DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
                             }
 
@@ -227,7 +228,7 @@ public class DIResumeableUpload {
                 .setContentTitle("Backup in progress")
                 .setProgress(10, 0, true)
                 .setSound(null)
-                .setOngoing(true)
+//                .setOngoing(true)
                 .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
                 .setContentText(Math.round((float) count * 100) / (fileArrayList.size()) + "%");
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -269,11 +270,17 @@ public class DIResumeableUpload {
 
 
     public void stopNotification() {
+        Intent dismissIntent = new Intent(context, ButtonReceiver.class);
+        dismissIntent.setAction("drive_it.cancel");
+        PendingIntent dismiss = PendingIntent.getBroadcast(context, 90, dismissIntent, PendingIntent.FLAG_ONE_SHOT);
+        if (notificationCompat != null) {
+            notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.cancel(DIConstants.NOTIFICATION_ID);
+        }
         notificationCompat = new NotificationCompat
                 .Builder(context, DATA_UPLOAD)
                 .setContentTitle("Backup Complete")
                 .setSound(null)
-                .setOngoing(false)
                 .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
                 .setContentText("");
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -284,7 +291,9 @@ public class DIResumeableUpload {
             notificationManager.createNotificationChannel(new NotificationChannel(DATA_UPLOAD, DATA_UPLOAD, NotificationManager.IMPORTANCE_LOW));
         }
         Notification notification = notificationCompat.build();
-        notificationManager.notify(DIConstants.NOTIFICATION_ID, notification);
+        notificationManager.notify(100, notification);
+        context.stopForeground(true);
+
     }
 
     public void setIcon(int icon) {
