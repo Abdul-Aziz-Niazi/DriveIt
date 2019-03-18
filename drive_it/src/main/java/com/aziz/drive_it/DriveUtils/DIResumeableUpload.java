@@ -284,11 +284,7 @@ public class DIResumeableUpload {
         notificationManager.notify(DIConstants.NOTIFICATION_ID, notification);
     }
 
-
-// String sessionUri = response.headers().get("location");
-//                        preferences.edit().putString(DIConstants.UPLD_POS, sessionUri).apply();
-//                        if (count + 1 < fileArrayList.size()) {
-//                            continueUpload(fileArrayList.get(++count));
-//                        }
-
+    public void setIcon(int icon) {
+        this.icon = icon;
+    }
 }

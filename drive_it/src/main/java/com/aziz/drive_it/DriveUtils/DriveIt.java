@@ -85,6 +85,7 @@ public class DriveIt  {
         DIBackupService.getInstance().setIcon(id);
         DIDeleteBackupService.getInstance().setIcon(id);
         DIRestoreService.getInstance().setIcon(id);
+        DIResumeableUpload.getInstance().setIcon(id);
     }
 
     public void signIn(Fragment host, DICallBack<String> signInCallBack) {
