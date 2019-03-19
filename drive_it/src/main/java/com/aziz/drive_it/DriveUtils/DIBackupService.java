@@ -180,7 +180,7 @@ public class DIBackupService extends Service {
         if (type == 0) {
             notificationCompat = new NotificationCompat
                     .Builder(context, DATA_BACKUP)
-                    .setContentTitle("")
+                    .setContentTitle("Backup")
                     .setProgress(10, 0, true)
                     .setSound(null)
                     .setOngoing(true)
