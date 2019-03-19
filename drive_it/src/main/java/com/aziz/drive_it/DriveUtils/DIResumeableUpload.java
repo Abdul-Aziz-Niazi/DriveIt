@@ -228,7 +228,7 @@ public class DIResumeableUpload {
                 .setContentTitle("Backup in progress")
                 .setProgress(10, 0, true)
                 .setSound(null)
-//                .setOngoing(true)
+                .setOngoing(true)
                 .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
                 .setContentText(Math.round((float) count * 100) / (fileArrayList.size()) + "%");
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

@@ -58,10 +58,15 @@ public class DIBackupService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         INSTANCE = this;
-        Log.d(TAG, "onStartCommand: Worked " + intent.getExtras().getString(DIConstants.DATA, "NULL"));
+//        Log.d(TAG, "onStartCommand: Worked " + intent.getExtras().getString(DIConstants.DATA, "NULL"));
         Log.d(TAG, "onStartCommand: Worked ");
         Type type = new TypeToken<ArrayList<DIFile>>() {
         }.getType();
+        if (intent.getExtras() == null || !intent.hasExtra(DIConstants.DATA) || !intent.hasExtra(DIConstants.DATA_FILES)) {
+            stopForeground(true);
+            stopSelf();
+            return START_NOT_STICKY;
+        }
         String DATA = intent.getExtras().getString(DIConstants.DATA, "NULL");
         String[] DATA_FILES = intent.getExtras().getStringArray(DIConstants.DATA_FILES);
         icon = intent.getExtras().getInt(DIConstants.DATA_ICON, 0);
