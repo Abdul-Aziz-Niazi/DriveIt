@@ -205,7 +205,7 @@ public class DIBackupService extends Service {
                 notificationCompat.setContentTitle("Backup Failed");
                 notificationCompat.setContentText("Files not found");
             } else {
-                onBackupComplete();
+//                onBackupComplete();
             }
             notificationCompat.setOngoing(false);
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

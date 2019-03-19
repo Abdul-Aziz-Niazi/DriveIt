@@ -216,7 +216,10 @@ public class DIResumeableUpload {
 
 
     public void craeteUpdatedNotification() {
-        if (notificationCompat != null) {
+        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(100);
+
+        if (notificationCompat != null && notificationCompat.build().category == null) {
             notificationCompat.setProgress(fileArrayList.size(), count, false);
             notificationCompat.setContentText(Math.round((float) count * 100) / (fileArrayList.size()) + "%");
             notificationCompat.mActions.clear();
@@ -231,7 +234,6 @@ public class DIResumeableUpload {
                 .setOngoing(true)
                 .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
                 .setContentText(Math.round((float) count * 100) / (fileArrayList.size()) + "%");
-        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (notificationManager.getNotificationChannel(DATA_UPLOAD) != null)
                 notificationManager.deleteNotificationChannel(DATA_UPLOAD);
@@ -281,6 +283,7 @@ public class DIResumeableUpload {
                 .Builder(context, DATA_UPLOAD)
                 .setContentTitle("Backup Complete")
                 .setSound(null)
+                .setCategory("final")
                 .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
                 .setContentText("");
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -293,6 +296,7 @@ public class DIResumeableUpload {
         Notification notification = notificationCompat.build();
         notificationManager.notify(100, notification);
         context.stopForeground(true);
+        notificationCompat = null;
 
     }
 
