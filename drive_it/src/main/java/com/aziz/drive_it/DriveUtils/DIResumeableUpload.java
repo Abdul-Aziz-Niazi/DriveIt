@@ -108,8 +108,9 @@ public class DIResumeableUpload {
                         Log.d(TAG, "onResponse: Success " + " " + diFile.getName());
                         continueUpload(sessionUri, diFile, 0);
                     } else {
-                        Log.d(TAG, "onUnsuccessful: " + response.errorBody().string());
-                        handleErrorResponse(response.errorBody().string());
+                        String error = response.errorBody().string();
+                        Log.d(TAG, "onUnsuccessful: " + error);
+                        handleErrorResponse(error);
                     }
                 } catch (Exception e) {
                     Log.d(TAG, "onException: " + e.getMessage());
@@ -223,6 +224,8 @@ public class DIResumeableUpload {
             notificationCompat.setProgress(fileArrayList.size(), count, false);
             notificationCompat.setContentText(Math.round((float) count * 100) / (fileArrayList.size()) + "%");
             notificationCompat.mActions.clear();
+            notificationCompat.setSmallIcon(R.drawable.notificaiton_tello_icon);
+
             notificationManager.notify(DIConstants.NOTIFICATION_ID, notificationCompat.build());
             return;
         }
@@ -232,7 +235,8 @@ public class DIResumeableUpload {
                 .setProgress(10, 0, true)
                 .setSound(null)
                 .setOngoing(true)
-                .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
+                .setSmallIcon(R.drawable.notificaiton_tello_icon)
+
                 .setContentText(Math.round((float) count * 100) / (fileArrayList.size()) + "%");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (notificationManager.getNotificationChannel(DATA_UPLOAD) != null)
@@ -255,7 +259,8 @@ public class DIResumeableUpload {
                 .Builder(context, DATA_UPLOAD)
                 .setContentTitle("")
                 .setSound(null)
-                .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
+                .setSmallIcon(R.drawable.notificaiton_tello_icon)
+
                 .addAction(0, "Retry", pendingIntent)
                 .addAction(0, "Cancel", dismiss)
                 .setContentText("Backup error, try again later");
@@ -284,7 +289,8 @@ public class DIResumeableUpload {
                 .setContentTitle("Backup Complete")
                 .setSound(null)
                 .setCategory("final")
-                .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
+                .setSmallIcon(R.drawable.notificaiton_tello_icon)
+
                 .setContentText("");
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

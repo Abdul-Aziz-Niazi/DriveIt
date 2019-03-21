@@ -153,7 +153,7 @@ public class DIDeleteBackupService extends Service {
             notificationCompat = new NotificationCompat
                     .Builder(context, DATA_DELETE)
                     .setSound(null)
-                    .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
+                    .setSmallIcon(R.drawable.notificaiton_tello_icon);
 
             notificationCompat.setContentTitle("Backup removed");
             if (errors != 0) {
@@ -173,7 +173,7 @@ public class DIDeleteBackupService extends Service {
             notificationCompat = new NotificationCompat
                     .Builder(context, DATA_DELETE)
                     .setSound(null)
-                    .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
+                    .setSmallIcon(R.drawable.notificaiton_tello_icon);
 
             notificationCompat.setContentText("Processing backup");
             notificationCompat.setProgress(100, 0, true);

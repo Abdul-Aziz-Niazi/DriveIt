@@ -63,7 +63,8 @@ public class DIRestoreService extends Service {
                     .setContentTitle("Restore in Progress")
                     .setProgress(10, 0, true)
                     .setSound(null)
-                    .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
+                    .setSmallIcon(R.drawable.notificaiton_tello_icon)
+
                     .setContentText("initializing restore");
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -76,7 +77,7 @@ public class DIRestoreService extends Service {
             notificationCompat = new NotificationCompat
                     .Builder(context, DATA_RESTORE)
                     .setSound(null)
-                    .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
+                    .setSmallIcon(R.drawable.notificaiton_tello_icon);
             if (count == 0) {
                 notificationCompat.setContentTitle("Backup not found");
                 notificationCompat.setContentText("Restore failed");
@@ -101,7 +102,7 @@ public class DIRestoreService extends Service {
         notificationCompat.setProgress(total, count, false);
         notificationCompat.setContentText(Math.round((float) count * 100) / (total) + "%");
         notificationCompat.setSound(null);
-        notificationCompat.setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
+        notificationCompat.setSmallIcon(R.drawable.notificaiton_tello_icon);
         notificationCompat.setOngoing(true);
         notificationManager.notify(NOTIFICATION_ID, notificationCompat.build());
         if (count == total) {
@@ -195,7 +196,8 @@ public class DIRestoreService extends Service {
                 .Builder(context, DATA_RESTORE)
                 .setContentTitle("Restore failed")
                 .setSound(null)
-                .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
+                .setSmallIcon(R.drawable.notificaiton_tello_icon)
+
                 .setContentText("Auth Error");
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -13,6 +13,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import com.aziz.drive_it.DriveUtils.model.DIFile;
 import com.aziz.drive_it.R;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 public class ButtonReceiver extends BroadcastReceiver {
     private static final String TAG = ButtonReceiver.class.getSimpleName();
@@ -35,7 +36,22 @@ public class ButtonReceiver extends BroadcastReceiver {
             context.stopService(backupIntent);
         } else if (intent.getAction().equalsIgnoreCase("drive_it.retry")) {
             updateNotification(context);
-            restartFromLastFile();
+            if (intent.getExtras() != null && intent.hasExtra(DIConstants.ERROR_DETAILS)
+                    && intent.getExtras().getString(DIConstants.ERROR_DETAILS,"").toLowerCase().contains("auth")){
+                DriveIt.getInstance().silentSignIn(context, new DICallBack<GoogleSignInAccount>() {
+                    @Override
+                    public void success(GoogleSignInAccount DIObject) {
+                        restartFromLastFile();
+                    }
+
+                    @Override
+                    public void failure(String error) {
+
+                    }
+                });
+            }else{
+                restartFromLastFile();
+            }
         }
     }
 
@@ -57,7 +73,7 @@ public class ButtonReceiver extends BroadcastReceiver {
                 .setProgress(10, 0, true)
                 .setSound(null)
                 .setOngoing(true)
-                .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
+                .setSmallIcon(R.drawable.notificaiton_tello_icon)
                 .setContentText("Processing Backup");
         notificationCompat.mActions.clear();
 

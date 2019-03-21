@@ -184,7 +184,7 @@ public class DIBackupService extends Service {
                     .setProgress(10, 0, true)
                     .setSound(null)
                     .setOngoing(true)
-                    .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon)
+                    .setSmallIcon(R.drawable.notificaiton_tello_icon)
                     .setContentText("Processing backup");
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -200,7 +200,7 @@ public class DIBackupService extends Service {
             notificationCompat = new NotificationCompat
                     .Builder(context, DATA_BACKUP)
                     .setSound(null)
-                    .setSmallIcon(icon == 0 ? R.drawable.ic_backup_drive : icon);
+                    .setSmallIcon(R.drawable.notificaiton_tello_icon);
             if (count == 0) {
                 notificationCompat.setContentTitle("Backup Failed");
                 notificationCompat.setContentText("Files not found");
