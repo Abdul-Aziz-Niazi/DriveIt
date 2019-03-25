@@ -62,6 +62,7 @@ public class DIResumeableUpload {
         count = 0;
         ArrayList<DIFile> diFileArrayList = filterOutFiles(fileArrayList);
         this.fileArrayList = diFileArrayList;
+        Log.d(TAG, "setResumeData: " + diFileArrayList);
         if (diFileArrayList.size() != 0) {
             createMetadata(diFileArrayList.get(count));
         }
@@ -126,7 +127,7 @@ public class DIResumeableUpload {
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                handleErrorResponse(t.getMessage());
+                handleErrorResponse("ON_FAILURE__CREATE_METADATA " + t.getMessage());
             }
         });
     }
@@ -135,15 +136,18 @@ public class DIResumeableUpload {
         try {
             HashMap<String, String> headers = new HashMap<>(DINetworkHandler.getHeaders());
             headers.put("Content-Type", URLConnection.guessContentTypeFromName(diFile.getFile().getName()));
+            Log.d(TAG, "continueUpload: headers-content-type"+diFile.getName());
             long uploadedBytes = chunkSizeInMb * 1024 * 1024;
             preferences.edit().putInt(DIConstants.CHNK_START, chunkStart).apply();
             if (chunkStart + uploadedBytes > diFile.getFile().length()) {
                 uploadedBytes = (int) diFile.getFile().length() - chunkStart;
             }
+            Log.d(TAG, "continueUpload: headers-chunk-calculation"+diFile.getName());
             headers.put("Content-Length", "" + uploadedBytes);
             headers.put("Content-Range", "bytes " + chunkStart + "-" + (chunkStart + uploadedBytes - 1) + "/" + diFile.getFile().length());
+            Log.d(TAG, "continueUpload: headers-content-range"+diFile.getName());
             byte[] uploadArrayBytes = createUploadBytes(chunkStart, diFile, uploadedBytes);
-
+            Log.d(TAG, "continueUpload: headers-create-upload-bytes"+diFile.getName());
             final RequestBody requestBody = RequestBody.create(MediaType.get("application/octet-stream"), uploadArrayBytes);
             Call<Void> post = DINetworkHandler.getInstance().getWebService().post(sessionUri, headers, requestBody);
             post.enqueue(new Callback<Void>() {
@@ -169,7 +173,6 @@ public class DIResumeableUpload {
                                 createMetadata(fileArrayList.get(++count));
                             } else {
                                 stopNotification();
-
                                 DIBackupDetailsRepository.getINSTANCE().setBackupChanged(true);
                             }
 
@@ -191,7 +194,7 @@ public class DIResumeableUpload {
 
                 @Override
                 public void onFailure(Call<Void> call, Throwable t) {
-                    handleErrorResponse(t.getMessage());
+                    handleErrorResponse("ON_FAILURE__UPLOAD " + t.getMessage());
                 }
             });
         } catch (Exception e) {
@@ -212,7 +215,6 @@ public class DIResumeableUpload {
         } catch (Exception e) {
             return new byte[(int) uploadedBytes];
         }
-
     }
 
 
